@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Talleres Gratuitos ITB</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Segoe UI, Arial, sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#003b8e,#005ed9);
+    color:white;
+    min-height:100vh;
+    overflow:hidden;
+}
+
+.container{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    min-height:100vh;
+}
+
+.left{
+    width:60%;
+    padding:60px;
+}
+
+.right{
+    width:40%;
+    background:white;
+    color:#003b8e;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+
+.badge{
+    display:inline-block;
+    background:#ffc107;
+    color:black;
+    font-weight:bold;
+    padding:12px 25px;
+    border-radius:50px;
+    margin-bottom:25px;
+    font-size:1.2rem;
+}
+
+h1{
+    font-size:5.5rem;
+    line-height:0.9;
+    margin-bottom:25px;
+}
+
+.subtitle{
+    font-size:1.6rem;
+    margin-bottom:30px;
+}
+
+.areas{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:18px;
+    margin-bottom:35px;
+}
+
+.area{
+    background:rgba(255,255,255,0.12);
+    padding:18px;
+    border-radius:12px;
+    font-size:1.2rem;
+}
+
+.cta{
+    background:#ffc107;
+    color:black;
+    display:inline-block;
+    padding:20px 30px;
+    border-radius:15px;
+    font-size:1.6rem;
+    font-weight:bold;
+}
+
+.qr{
+    width:350px;
+    max-width:80%;
+    animation:pulse 2s infinite;
+}
+
+.qr-title{
+    margin-top:25px;
+    font-size:2rem;
+    font-weight:bold;
+}
+
+.qr-subtitle{
+    margin-top:10px;
+    font-size:1.1rem;
+    text-align:center;
+    padding:0 20px;
+}
+
+@keyframes pulse{
+    0%{transform:scale(1);}
+    50%{transform:scale(1.06);}
+    100%{transform:scale(1);}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="left">
+
+        <div class="badge">
+            ITB
+        </div>
+
+        <h1>
+            TALLERES<br>
+            GRATUITOS
+        </h1>
+
+        <div class="subtitle">
+            Regístrate para recibir información sobre nuestros próximos talleres.
+        </div>
+
+        <div class="areas">
+
+            <div class="area">
+                📊 Administración
+            </div>
+
+            <div class="area">
+                🧮 Contabilidad
+            </div>
+
+            <div class="area">
+                💻 Desarrollo de Software
+            </div>
+
+            <div class="area">
+                🤝 Ventas
+            </div>
+
+        </div>
+
+        <div class="cta" id="mensaje">
+            Escanea el código QR
+        </div>
+
+    </div>
+
+    <div class="right">
+
+        <!-- REEMPLAZA qr.png POR EL NOMBRE DE TU IMAGEN -->
+
+        <img src="qr_mini.png" alt="QR Registro" class="qr">
+
+        <div class="qr-title">
+            CUPOS LIMITADOS
+        </div>
+
+        <div class="qr-subtitle">
+            Completa tu registro en menos de un minuto.
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const mensajes = [
+    "Escanea el código QR",
+    "Regístrate en segundos",
+    "Participa en talleres gratuitos",
+    "Conoce más sobre el ITB"
+];
+
+let actual = 0;
+
+setInterval(() => {
+
+    actual++;
+
+    if(actual >= mensajes.length){
+        actual = 0;
+    }
+
+    document.getElementById("mensaje").textContent = mensajes[actual];
+
+},3000);
+
+</script>
+
+</body>
+</html>
