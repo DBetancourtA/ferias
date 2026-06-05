@@ -1,0 +1,1993 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instituto Tecnológico — Feria de Carreras 2026</title>
+
+  <!-- CDN: Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- CDN: Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- CDN: Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* =====================================================
+       VARIABLES GLOBALES DE DISEÑO
+       ===================================================== */
+    :root {
+      --bg:        #09090f;
+      --surface:   #111120;
+      --border:    #1e1e35;
+      --muted:     #2a2a45;
+      --text:      #e8e8f0;
+      --text-dim:  #7070a0;
+      --accent-sw: #00e5ff;   /* Software  – cian eléctrico */
+      --accent-vn: #ff6b35;   /* Ventas    – naranja fuego  */
+      --accent-ad: #7c3aed;   /* Administración – violeta  */
+      --accent-co: #22c55e;   /* Contabilidad   – verde    */
+    }
+
+    /* =====================================================
+       BASE
+       ===================================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4 { font-family: 'Syne', sans-serif; }
+    code, .mono      { font-family: 'DM Mono', monospace; }
+
+    /* =====================================================
+       FONDO ANIMADO (cuadrícula)
+       ===================================================== */
+    .grid-bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.4;
+    }
+    .grid-glow {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0,229,255,.07) 0%, transparent 70%);
+    }
+
+    /* =====================================================
+       LAYOUT PRINCIPAL
+       ===================================================== */
+    #app { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* =====================================================
+       HEADER / NAVEGACIÓN
+       ===================================================== */
+    header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(9,9,15,.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1.1rem;
+      letter-spacing: -.5px;
+      color: var(--text);
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .logo span {
+      background: linear-gradient(135deg, var(--accent-sw), var(--accent-ad));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    nav { display: flex; gap: .25rem; }
+
+    .nav-btn {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .45rem 1rem;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-dim);
+      font-family: 'DM Sans', sans-serif;
+      font-size: .82rem; font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .nav-btn:hover { background: var(--muted); color: var(--text); }
+    .nav-btn.active {
+      background: var(--muted);
+      border-color: var(--active-color, var(--accent-sw));
+      color: var(--active-color, var(--accent-sw));
+    }
+    .nav-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--active-color, currentColor);
+    }
+
+    /* número de paso */
+    .nav-step {
+      font-size: .7rem; font-weight: 700;
+      background: var(--muted); border-radius: 4px;
+      padding: 1px 5px; color: var(--text-dim);
+    }
+    .nav-btn.active .nav-step { background: var(--active-color); color: #000; }
+
+    /* =====================================================
+       MÓDULOS
+       ===================================================== */
+    .module { display: none; padding: 2rem 1.5rem; flex: 1; animation: fadeIn .35s ease; }
+    .module.active { display: block; }
+
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+    /* =====================================================
+       COMPONENTES REUTILIZABLES
+       ===================================================== */
+
+    /* Tarjeta */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      position: relative; overflow: hidden;
+    }
+    .card-accent-bar {
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      border-radius: 16px 16px 0 0;
+    }
+
+    /* Métrica */
+    .metric-label { font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+    .metric-value { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; line-height: 1.1; }
+
+    /* Botón primario */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .7rem 1.5rem;
+      border-radius: 10px;
+      border: none; cursor: pointer;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: .9rem;
+      transition: all .2s;
+      position: relative; overflow: hidden;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,.1);
+      opacity: 0; transition: opacity .2s;
+    }
+    .btn-primary:hover::after { opacity: 1; }
+    .btn-primary:active { transform: scale(.97); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Badge */
+    .badge {
+      display: inline-flex; align-items: center; gap: .3rem;
+      padding: .2rem .6rem; border-radius: 20px;
+      font-size: .72rem; font-weight: 600;
+    }
+
+    /* Barra de progreso */
+    .progress-track {
+      height: 6px; background: var(--muted); border-radius: 99px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 99px;
+      transition: width .4s ease;
+    }
+
+    /* =====================================================
+       MÓDULO 1 — SOFTWARE
+       ===================================================== */
+    .console {
+      background: #050508;
+      border: 1px solid #1a1a2e;
+      border-radius: 12px;
+      overflow: hidden;
+      font-family: 'DM Mono', monospace;
+    }
+    .console-bar {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .6rem 1rem;
+      background: #0d0d1a;
+      border-bottom: 1px solid #1a1a2e;
+    }
+    .dot { width:10px; height:10px; border-radius:50%; }
+    .console-title { font-size:.75rem; color: var(--text-dim); margin-left: .5rem; }
+    .console-body { padding: 1rem 1.2rem; min-height: 180px; font-size: .8rem; line-height: 1.8; }
+    .log-line { display: flex; gap: .75rem; }
+    .log-time { color: #555580; min-width: 60px; }
+    .log-ok   { color: var(--accent-sw); }
+    .log-warn { color: #facc15; }
+    .log-err  { color: #f87171; }
+    .log-info { color: var(--text-dim); }
+    .cursor-blink { display:inline-block; width:8px; height:14px; background:var(--accent-sw); animation: blink .7s infinite; vertical-align:middle; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* Deploy progress step */
+    .deploy-step {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .6rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: .82rem; color: var(--text-dim);
+    }
+    .deploy-step.done { color: var(--accent-sw); }
+    .deploy-step.active { color: var(--text); }
+    .step-icon { width: 20px; text-align:center; }
+
+    /* Preview iframe simulada */
+    .store-preview {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      min-height: 260px;
+      display: none;
+      border: 2px solid var(--accent-sw);
+      box-shadow: 0 0 30px rgba(0,229,255,.2);
+    }
+    .store-preview.visible { display: block; }
+    .store-inner { padding: 1rem; color: #111; font-family: 'DM Sans', sans-serif; }
+
+    /* =====================================================
+       MÓDULO 2 — VENTAS
+       ===================================================== */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 1rem; }
+
+    /* Línea de actividad de campaña */
+    .campaign-log {
+      display: flex; flex-direction: column; gap: .4rem;
+      max-height: 160px; overflow-y: auto;
+      padding-right: .25rem;
+    }
+    .campaign-log::-webkit-scrollbar { width: 4px; }
+    .campaign-log::-webkit-scrollbar-track { background: var(--muted); border-radius:2px; }
+    .campaign-log::-webkit-scrollbar-thumb { background: var(--accent-vn); border-radius:2px; }
+
+    .log-entry {
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .78rem; color: var(--text-dim);
+      animation: slideIn .3s ease;
+    }
+    @keyframes slideIn { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:none} }
+
+    /* =====================================================
+       MÓDULO 3 — ADMINISTRACIÓN
+       ===================================================== */
+    .stock-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .8rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .stock-item:last-child { border-bottom: none; }
+    .stock-bar-wrap { flex: 1; margin: 0 1rem; }
+
+    .alert-toast {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .75rem 1rem;
+      border-radius: 10px;
+      border: 1px solid;
+      font-size: .82rem;
+      animation: toastIn .4s ease;
+    }
+    @keyframes toastIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+    /* =====================================================
+       MÓDULO 4 — CONTABILIDAD
+       ===================================================== */
+    .balance-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .65rem 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: .88rem;
+    }
+    .balance-row:last-child { border-bottom: none; }
+    .balance-total {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .9rem 0;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem;
+      border-top: 2px solid var(--accent-co);
+    }
+
+    /* =====================================================
+       RESPONSIVE
+       ===================================================== */
+    @media (max-width: 640px) {
+      header { padding: 0 .75rem; }
+      nav { gap: .1rem; }
+      .nav-btn { padding: .4rem .6rem; font-size: .75rem; }
+      .nav-btn .nav-step { display:none; }
+      .module { padding: 1rem .75rem; }
+    }
+
+    /* =====================================================
+       MISC UTILS
+       ===================================================== */
+    .glow-sw { box-shadow: 0 0 20px rgba(0,229,255,.15); }
+    .glow-vn { box-shadow: 0 0 20px rgba(255,107,53,.15); }
+    .glow-ad { box-shadow: 0 0 20px rgba(124,58,237,.15); }
+    .glow-co { box-shadow: 0 0 20px rgba(34,197,94,.15); }
+
+    /* =====================================================
+       FOOTER DE ERRORES
+       ===================================================== */
+    #error-footer {
+      position: sticky; bottom: 0; z-index: 40;
+      background: rgba(9,9,15,.92);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      padding: .6rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .footer-left {
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .75rem; color: var(--text-dim);
+    }
+    .pulse-red {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #f87171;
+      box-shadow: 0 0 6px #f87171;
+      animation: pulseRed 1.4s infinite;
+    }
+    @keyframes pulseRed { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+
+    #btn-trigger-error {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .4rem 1rem;
+      border-radius: 8px;
+      background: rgba(248,113,113,.12);
+      border: 1px solid rgba(248,113,113,.4);
+      color: #f87171;
+      font-family: 'DM Mono', monospace; font-size: .78rem; font-weight: 500;
+      cursor: pointer; transition: all .2s;
+    }
+    #btn-trigger-error:hover { background: rgba(248,113,113,.22); border-color: #f87171; }
+    #btn-trigger-error:disabled { opacity:.4; cursor:not-allowed; }
+
+    /* =====================================================
+       MODAL DE ERROR / TÉCNICO
+       ===================================================== */
+    #error-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,.75);
+      backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    #error-overlay.visible { display: flex; animation: fadeIn .25s ease; }
+
+    #error-modal {
+      background: #0d0d1a;
+      border: 1px solid rgba(248,113,113,.5);
+      border-radius: 18px;
+      width: 100%; max-width: 560px;
+      overflow: hidden;
+      box-shadow: 0 0 60px rgba(248,113,113,.2), 0 24px 60px rgba(0,0,0,.6);
+      animation: modalIn .3s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes modalIn { from{opacity:0;transform:scale(.9) translateY(16px)} to{opacity:1;transform:none} }
+
+    .error-modal-header {
+      background: linear-gradient(135deg, rgba(248,113,113,.15), rgba(239,68,68,.08));
+      border-bottom: 1px solid rgba(248,113,113,.3);
+      padding: 1.25rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .error-modal-title {
+      display: flex; align-items: center; gap: .75rem;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; color: #f87171;
+    }
+    .error-icon-ring {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(248,113,113,.2); border: 2px solid rgba(248,113,113,.5);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      animation: pulseRed 1.2s infinite;
+    }
+
+    .error-modal-body { padding: 1.5rem; }
+
+    /* Pantalla de error (BSOD-like pero estilizado) */
+    .error-screen {
+      background: #050508;
+      border: 1px solid #1a1a2e; border-radius: 10px;
+      padding: 1rem 1.2rem; margin-bottom: 1.2rem;
+      font-family: 'DM Mono', monospace; font-size: .78rem; line-height: 1.9;
+    }
+    .err-code { color: #f87171; font-weight: 700; }
+    .err-detail { color: #ff9090; }
+    .err-dim { color: #555580; }
+    .err-stack { color: #4040a0; font-size: .7rem; }
+
+    /* Pasos de resolución */
+    .fix-step {
+      display: flex; align-items: flex-start; gap: .75rem;
+      padding: .65rem 0; border-bottom: 1px solid var(--border);
+      cursor: pointer; border-radius: 8px; transition: background .15s;
+    }
+    .fix-step:last-child { border-bottom: none; }
+    .fix-step:hover { background: rgba(255,255,255,.03); }
+    .fix-step-num {
+      min-width: 24px; height: 24px; border-radius: 50%;
+      background: var(--muted); color: var(--text-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'DM Mono', monospace; font-size: .7rem; font-weight: 700;
+      transition: all .2s;
+    }
+    .fix-step.done .fix-step-num { background: var(--accent-co); color: #000; }
+    .fix-step.active .fix-step-num { background: var(--accent-sw); color: #000; animation: pulseRed 1s infinite; }
+    .fix-step-text { font-size: .82rem; color: var(--text-dim); transition: color .2s; }
+    .fix-step.done .fix-step-text { color: var(--accent-co); }
+    .fix-step.active .fix-step-text { color: var(--text); }
+
+    #btn-fix {
+      display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+      width: 100%; padding: .75rem;
+      border-radius: 10px; border: none; cursor: pointer;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: .9rem;
+      background: linear-gradient(135deg, #f87171, #dc2626); color: #fff;
+      transition: all .2s; margin-top: 1rem;
+    }
+    #btn-fix:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(248,113,113,.4); }
+    #btn-fix:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    #btn-fix.solved {
+      background: linear-gradient(135deg, var(--accent-co), #15803d);
+    }
+
+    /* Técnico animado */
+    .tech-avatar {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .75rem 1rem;
+      background: rgba(0,229,255,.06); border: 1px solid rgba(0,229,255,.2);
+      border-radius: 10px; margin-bottom: 1rem; font-size: .82rem;
+    }
+    .tech-avatar-icon {
+      font-size: 1.6rem; animation: bounce .8s infinite alternate;
+    }
+    @keyframes bounce { from{transform:translateY(0)} to{transform:translateY(-4px)} }
+    .tech-name { font-weight: 700; color: var(--accent-sw); font-family: 'Syne',sans-serif; }
+    .tech-status { font-size: .72rem; color: var(--text-dim); }
+
+    .text-sw { color: var(--accent-sw); }
+    .text-vn { color: var(--accent-vn); }
+    .text-ad { color: var(--accent-ad); }
+    .text-co { color: var(--accent-co); }
+
+    .border-sw { border-color: var(--accent-sw) !important; }
+    .border-vn { border-color: var(--accent-vn) !important; }
+    .border-ad { border-color: var(--accent-ad) !important; }
+    .border-co { border-color: var(--accent-co) !important; }
+  </style>
+</head>
+<body>
+
+<!-- Decoraciones de fondo -->
+<div class="grid-bg"></div>
+<div class="grid-glow"></div>
+
+<div id="app">
+
+  <!-- ===================================================
+       HEADER NAVEGACIÓN
+       =================================================== -->
+  <header>
+    <div class="logo">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <rect x="1" y="1" width="9" height="9" rx="2" fill="#00e5ff" opacity=".9"/>
+        <rect x="12" y="1" width="9" height="9" rx="2" fill="#7c3aed" opacity=".9"/>
+        <rect x="1" y="12" width="9" height="9" rx="2" fill="#ff6b35" opacity=".9"/>
+        <rect x="12" y="12" width="9" height="9" rx="2" fill="#22c55e" opacity=".9"/>
+      </svg>
+      Instituto <span>Tech&amp;Co</span>
+    </div>
+
+    <nav id="main-nav">
+      <!-- Los botones se renderizan por JS para mantener DRY -->
+    </nav>
+  </header>
+
+  <!-- ===================================================
+       MÓDULO 1: DESARROLLO DE SOFTWARE
+       =================================================== -->
+  <section id="mod-software" class="module">
+    <div class="max-w-6xl mx-auto">
+
+      <!-- Encabezado del módulo -->
+      <div class="mb-6">
+        <p class="mono text-sm mb-1" style="color:var(--accent-sw)">// carrera_01.init()</p>
+        <h2 class="text-3xl font-extrabold">Desarrollo de <span class="text-sw">Software</span></h2>
+        <p class="text-sm mt-1" style="color:var(--text-dim)">Construye, despliega y escala aplicaciones reales.</p>
+      </div>
+
+      <div class="grid gap-4 lg:grid-cols-2">
+
+        <!-- Panel: consola de deploy -->
+        <div class="card glow-sw border-sw" style="border-color:rgba(0,229,255,.3)">
+          <div class="card-accent-bar" style="background:linear-gradient(90deg,var(--accent-sw),#0080ff)"></div>
+          <h3 class="font-bold mb-3 flex items-center gap-2 text-sw">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Terminal de Despliegue
+          </h3>
+
+          <div class="console mb-4">
+            <div class="console-bar">
+              <div class="dot" style="background:#ff5f57"></div>
+              <div class="dot" style="background:#febc2e"></div>
+              <div class="dot" style="background:#28c840"></div>
+              <span class="console-title">deploy@instituto-tech ~ $</span>
+            </div>
+            <div class="console-body" id="console-output">
+              <div class="log-line"><span class="log-time">00:00:00</span><span class="log-info">Sistema listo. Esperando instrucciones...</span></div>
+              <div class="log-line"><span class="log-time">&nbsp;</span><span class="log-info"><span class="cursor-blink"></span></span></div>
+            </div>
+          </div>
+
+          <!-- Pasos de deploy -->
+          <div id="deploy-steps" class="mb-4" style="display:none">
+            <div class="deploy-step" id="step-1"><span class="step-icon">⬜</span> Compilando código fuente...</div>
+            <div class="deploy-step" id="step-2"><span class="step-icon">⬜</span> Ejecutando pruebas unitarias...</div>
+            <div class="deploy-step" id="step-3"><span class="step-icon">⬜</span> Construyendo imagen Docker...</div>
+            <div class="deploy-step" id="step-4"><span class="step-icon">⬜</span> Subiendo a servidor en la nube...</div>
+            <div class="deploy-step" id="step-5"><span class="step-icon">⬜</span> Activando dominio público...</div>
+          </div>
+
+          <!-- Barra de progreso global -->
+          <div class="mb-4" id="deploy-progress-wrap" style="display:none">
+            <div class="flex justify-between text-xs mb-1" style="color:var(--text-dim)">
+              <span>Progreso del despliegue</span>
+              <span id="deploy-percent" class="mono text-sw">0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="deploy-bar" style="width:0%;background:linear-gradient(90deg,var(--accent-sw),#0080ff)"></div>
+            </div>
+          </div>
+
+          <button id="btn-deploy" class="btn-primary w-full justify-center"
+            style="background:linear-gradient(135deg,var(--accent-sw),#0066cc);color:#000">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Desplegar Aplicación
+          </button>
+        </div>
+
+        <!-- Panel derecho: métricas + preview -->
+        <div class="flex flex-col gap-4">
+
+          <!-- Métricas técnicas -->
+          <div class="card">
+            <h3 class="font-bold mb-3 text-sm" style="color:var(--text-dim)">MÉTRICAS DEL SERVIDOR</h3>
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <div class="metric-label">Uptime</div>
+                <div class="metric-value text-sw" id="sw-uptime">--</div>
+              </div>
+              <div>
+                <div class="metric-label">Requests/s</div>
+                <div class="metric-value text-sw" id="sw-rps">--</div>
+              </div>
+              <div>
+                <div class="metric-label">Latencia</div>
+                <div class="metric-value text-sw" id="sw-latency">--</div>
+              </div>
+            </div>
+            <div class="mt-3">
+              <div class="flex justify-between text-xs mb-1" style="color:var(--text-dim)">
+                <span>CPU</span><span id="sw-cpu-val">0%</span>
+              </div>
+              <div class="progress-track mb-2">
+                <div class="progress-fill" id="sw-cpu-bar" style="width:0%;background:var(--accent-sw)"></div>
+              </div>
+              <div class="flex justify-between text-xs mb-1" style="color:var(--text-dim)">
+                <span>RAM</span><span id="sw-ram-val">0%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="sw-ram-bar" style="width:0%;background:#0080ff"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Badge de estado -->
+          <div id="status-badge-wrap" class="card flex items-center justify-between" style="display:none!important">
+            <div>
+              <div class="metric-label mb-1">Estado del Sistema</div>
+              <div class="flex items-center gap-2">
+                <div style="width:8px;height:8px;border-radius:50%;background:var(--accent-co);box-shadow:0 0 8px var(--accent-co);animation:blink .7s infinite"></div>
+                <span class="font-bold text-co">SISTEMA ONLINE</span>
+              </div>
+            </div>
+            <a id="btn-ver-tienda" href="#" target="_blank"
+              class="btn-primary"
+              style="background:linear-gradient(135deg,var(--accent-co),#15803d);color:#fff;font-size:.8rem;display:none">
+              🌐 Ver Tienda Online
+            </a>
+          </div>
+
+          <!-- Preview tienda inline -->
+          <div id="store-preview" class="store-preview">
+            <div class="store-inner">
+              <!-- Tienda simulada -->
+              <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:12px 16px;border-radius:8px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+                <span style="font-weight:800;font-size:1rem;font-family:Syne,sans-serif">🛍 TechStore</span>
+                <span style="font-size:.75rem;background:rgba(0,229,255,.15);padding:2px 8px;border-radius:99px;color:#00e5ff">Online</span>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                <div style="border:1px solid #eee;border-radius:8px;padding:8px;text-align:center;font-size:.75rem;color:#333">
+                  <div style="font-size:1.6rem">💻</div>
+                  <div style="font-weight:600">Laptop Pro</div>
+                  <div style="color:#0066cc;font-weight:700">$1,299</div>
+                  <button style="margin-top:4px;background:#00e5ff;border:none;border-radius:4px;padding:2px 8px;font-size:.7rem;cursor:pointer;font-weight:600">Comprar</button>
+                </div>
+                <div style="border:1px solid #eee;border-radius:8px;padding:8px;text-align:center;font-size:.75rem;color:#333">
+                  <div style="font-size:1.6rem">📱</div>
+                  <div style="font-weight:600">Smartphone X</div>
+                  <div style="color:#0066cc;font-weight:700">$899</div>
+                  <button style="margin-top:4px;background:#00e5ff;border:none;border-radius:4px;padding:2px 8px;font-size:.7rem;cursor:pointer;font-weight:600">Comprar</button>
+                </div>
+                <div style="border:1px solid #eee;border-radius:8px;padding:8px;text-align:center;font-size:.75rem;color:#333">
+                  <div style="font-size:1.6rem">🖥</div>
+                  <div style="font-weight:600">Monitor 4K</div>
+                  <div style="color:#0066cc;font-weight:700">$599</div>
+                  <button style="margin-top:4px;background:#00e5ff;border:none;border-radius:4px;padding:2px 8px;font-size:.7rem;cursor:pointer;font-weight:600">Comprar</button>
+                </div>
+              </div>
+              <div style="margin-top:10px;background:#f0f9ff;border-radius:6px;padding:8px;font-size:.72rem;color:#0066cc;text-align:center">
+                ✅ Tienda desplegada por el equipo de <strong>Desarrollo de Software</strong>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Tarjeta: stack tecnológico -->
+      <div class="card mt-4">
+        <h3 class="font-bold mb-3 text-sm" style="color:var(--text-dim)">STACK TECNOLÓGICO</h3>
+        <div class="flex flex-wrap gap-2">
+          <span class="badge" style="background:rgba(0,229,255,.1);color:var(--accent-sw);border:1px solid rgba(0,229,255,.3)">⚡ JavaScript</span>
+          <span class="badge" style="background:rgba(0,229,255,.1);color:var(--accent-sw);border:1px solid rgba(0,229,255,.3)">🐍 Python</span>
+          <span class="badge" style="background:rgba(0,229,255,.1);color:var(--accent-sw);border:1px solid rgba(0,229,255,.3)">☕ Java</span>
+          <span class="badge" style="background:rgba(0,229,255,.1);color:var(--accent-sw);border:1px solid rgba(0,229,255,.3)">🐳 Docker</span>
+          <span class="badge" style="background:rgba(0,229,255,.1);color:var(--accent-sw);border:1px solid rgba(0,229,255,.3)">☁️ AWS</span>
+          <span class="badge" style="background:rgba(0,229,255,.1);color:var(--accent-sw);border:1px solid rgba(0,229,255,.3)">🗄 PostgreSQL</span>
+          <span class="badge" style="background:rgba(0,229,255,.1);color:var(--accent-sw);border:1px solid rgba(0,229,255,.3)">🔒 Node.js</span>
+          <span class="badge" style="background:rgba(0,229,255,.1);color:var(--accent-sw);border:1px solid rgba(0,229,255,.3)">🌐 REST APIs</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================================================
+       MÓDULO 2: VENTAS
+       =================================================== -->
+  <section id="mod-ventas" class="module">
+    <div class="max-w-6xl mx-auto">
+
+      <div class="mb-6">
+        <p class="mono text-sm mb-1" style="color:var(--accent-vn)">// carrera_02.launch()</p>
+        <h2 class="text-3xl font-extrabold">Carrera de <span class="text-vn">Ventas</span></h2>
+        <p class="text-sm mt-1" style="color:var(--text-dim)">Convierte oportunidades en ingresos reales para la empresa.</p>
+      </div>
+
+      <!-- KPIs principales -->
+      <div class="kpi-grid mb-4">
+        <div class="card glow-vn" style="border-color:rgba(255,107,53,.3)">
+          <div class="card-accent-bar" style="background:linear-gradient(90deg,var(--accent-vn),#ff9500)"></div>
+          <div class="metric-label">💰 Ingresos Totales</div>
+          <div class="metric-value text-vn mono" id="vn-ingresos">$0</div>
+          <div class="text-xs mt-1" style="color:var(--text-dim)">acumulado campaña</div>
+        </div>
+        <div class="card">
+          <div class="metric-label">🧾 Ventas Realizadas</div>
+          <div class="metric-value text-vn mono" id="vn-ventas">0</div>
+          <div class="text-xs mt-1" style="color:var(--text-dim)">transacciones</div>
+        </div>
+        <div class="card">
+          <div class="metric-label">👤 Nuevos Clientes</div>
+          <div class="metric-value text-vn mono" id="vn-clientes">0</div>
+          <div class="text-xs mt-1" style="color:var(--text-dim)">adquiridos</div>
+        </div>
+        <div class="card">
+          <div class="metric-label">📈 Tasa de Conversión</div>
+          <div class="metric-value text-vn mono" id="vn-conversion">0%</div>
+          <div class="text-xs mt-1" style="color:var(--text-dim)">leads → ventas</div>
+        </div>
+      </div>
+
+      <div class="grid gap-4 lg:grid-cols-2">
+
+        <!-- Panel campaña -->
+        <div class="card" style="border-color:rgba(255,107,53,.3)">
+          <h3 class="font-bold mb-3 text-vn flex items-center gap-2">
+            <span>📣</span> Control de Campaña
+          </h3>
+
+          <div class="mb-3">
+            <div class="flex justify-between text-xs mb-1" style="color:var(--text-dim)">
+              <span>Alcance de campaña</span>
+              <span id="vn-reach-val" class="mono">0 personas</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="vn-reach-bar" style="width:0%;background:linear-gradient(90deg,var(--accent-vn),#ff9500)"></div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="text-xs font-semibold mb-1 block" style="color:var(--text-dim)">TIPO DE CAMPAÑA</label>
+            <div class="flex gap-2 flex-wrap" id="campaign-type-btns">
+              <button class="badge campaign-type-btn active-campaign" data-type="digital" style="background:rgba(255,107,53,.2);color:var(--accent-vn);border:1px solid var(--accent-vn);cursor:pointer;padding:.3rem .8rem">📱 Digital</button>
+              <button class="badge campaign-type-btn" data-type="email" style="background:var(--muted);color:var(--text-dim);border:1px solid transparent;cursor:pointer;padding:.3rem .8rem">✉️ Email</button>
+              <button class="badge campaign-type-btn" data-type="eventos" style="background:var(--muted);color:var(--text-dim);border:1px solid transparent;cursor:pointer;padding:.3rem .8rem">🎪 Eventos</button>
+            </div>
+          </div>
+
+          <button id="btn-campaign" class="btn-primary w-full justify-center"
+            style="background:linear-gradient(135deg,var(--accent-vn),#cc4400);color:#fff">
+            🚀 Lanzar Campaña de Marketing
+          </button>
+
+          <div id="vn-status" class="mt-3" style="display:none">
+            <div class="badge" style="background:rgba(34,197,94,.1);color:var(--accent-co);border:1px solid rgba(34,197,94,.3)">
+              ✅ Campaña activa — generando leads en tiempo real
+            </div>
+          </div>
+        </div>
+
+        <!-- Log de actividad -->
+        <div class="card">
+          <h3 class="font-bold mb-3 text-sm flex items-center gap-2" style="color:var(--text-dim)">
+            📋 ACTIVIDAD EN VIVO
+          </h3>
+          <div class="campaign-log" id="vn-log">
+            <div class="log-entry" style="color:var(--text-dim)">
+              <span>⏳</span> Esperando lanzamiento de campaña...
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Gráfico de embudo -->
+      <div class="card mt-4">
+        <h3 class="font-bold mb-4 text-sm" style="color:var(--text-dim)">EMBUDO DE VENTAS</h3>
+        <div class="grid grid-cols-4 gap-2 text-center text-xs">
+          <div>
+            <div class="mono font-bold text-lg text-vn" id="funnel-leads">0</div>
+            <div style="height:6px;background:rgba(255,107,53,.5);border-radius:3px;margin:4px 0"></div>
+            <div style="color:var(--text-dim)">Leads</div>
+          </div>
+          <div>
+            <div class="mono font-bold text-lg text-vn" id="funnel-prospects">0</div>
+            <div style="height:6px;background:rgba(255,107,53,.35);border-radius:3px;margin:4px 0"></div>
+            <div style="color:var(--text-dim)">Prospectos</div>
+          </div>
+          <div>
+            <div class="mono font-bold text-lg text-vn" id="funnel-negoc">0</div>
+            <div style="height:6px;background:rgba(255,107,53,.2);border-radius:3px;margin:4px 0"></div>
+            <div style="color:var(--text-dim)">Negociación</div>
+          </div>
+          <div>
+            <div class="mono font-bold text-lg text-vn" id="funnel-cerradas">0</div>
+            <div style="height:6px;background:var(--accent-vn);border-radius:3px;margin:4px 0"></div>
+            <div style="color:var(--text-dim)">Cerradas</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================================================
+       MÓDULO 3: ADMINISTRACIÓN
+       =================================================== -->
+  <section id="mod-admin" class="module">
+    <div class="max-w-6xl mx-auto">
+
+      <div class="mb-6">
+        <p class="mono text-sm mb-1" style="color:var(--accent-ad)">// carrera_03.manage()</p>
+        <h2 class="text-3xl font-extrabold">Carrera de <span class="text-ad">Administración</span></h2>
+        <p class="text-sm mt-1" style="color:var(--text-dim)">Gestiona recursos, personal e inventario con eficiencia.</p>
+      </div>
+
+      <div class="grid gap-4 lg:grid-cols-3 mb-4">
+        <div class="card glow-ad" style="border-color:rgba(124,58,237,.3)">
+          <div class="card-accent-bar" style="background:linear-gradient(90deg,var(--accent-ad),#a855f7)"></div>
+          <div class="metric-label">👥 Personal Activo</div>
+          <div class="metric-value text-ad" id="ad-personal">48</div>
+          <div class="text-xs mt-1" style="color:var(--text-dim)">empleados operativos</div>
+        </div>
+        <div class="card">
+          <div class="metric-label">📦 Pedidos Procesados</div>
+          <div class="metric-value text-ad" id="ad-pedidos">0</div>
+          <div class="text-xs mt-1" style="color:var(--text-dim)">este ciclo</div>
+        </div>
+        <div class="card">
+          <div class="metric-label">💸 Costo Operativo</div>
+          <div class="metric-value text-ad mono" id="ad-costo">$0</div>
+          <div class="text-xs mt-1" style="color:var(--text-dim)">acumulado</div>
+        </div>
+      </div>
+
+      <div class="grid gap-4 lg:grid-cols-2">
+
+        <!-- Inventario -->
+        <div class="card" style="border-color:rgba(124,58,237,.3)">
+          <h3 class="font-bold mb-3 text-ad flex items-center gap-2">
+            <span>📦</span> Gestión de Inventario
+          </h3>
+          <div id="stock-list">
+            <!-- generado por JS -->
+          </div>
+          <button id="btn-pedidos" class="btn-primary w-full justify-center mt-4"
+            style="background:linear-gradient(135deg,var(--accent-ad),#6d28d9);color:#fff">
+            ⚡ Procesar Pedidos de Clientes
+          </button>
+        </div>
+
+        <!-- Alertas y personal -->
+        <div class="flex flex-col gap-4">
+          <div class="card">
+            <h3 class="font-bold mb-3 text-sm" style="color:var(--text-dim)">PERSONAL POR ÁREA</h3>
+            <div id="personal-list">
+              <!-- generado por JS -->
+            </div>
+          </div>
+          <div class="card flex-1">
+            <h3 class="font-bold mb-3 text-sm" style="color:var(--text-dim)">🔔 ALERTAS LOGÍSTICAS</h3>
+            <div id="ad-alerts" class="flex flex-col gap-2">
+              <div class="text-sm" style="color:var(--text-dim)">Sin alertas activas.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================
+       MÓDULO 4: CONTABILIDAD
+       =================================================== -->
+  <section id="mod-contabilidad" class="module">
+    <div class="max-w-6xl mx-auto">
+
+      <div class="mb-6">
+        <p class="mono text-sm mb-1" style="color:var(--accent-co)">// carrera_04.close()</p>
+        <h2 class="text-3xl font-extrabold">Carrera de <span class="text-co">Contabilidad</span></h2>
+        <p class="text-sm mt-1" style="color:var(--text-dim)">Analiza la salud financiera y genera cierres contables.</p>
+      </div>
+
+      <div class="grid gap-4 lg:grid-cols-2 mb-4">
+
+        <!-- Balance general -->
+        <div class="card glow-co" style="border-color:rgba(34,197,94,.3)">
+          <div class="card-accent-bar" style="background:linear-gradient(90deg,var(--accent-co),#86efac)"></div>
+          <h3 class="font-bold mb-4 text-co flex items-center gap-2">
+            <span>📊</span> Estado de Resultados
+          </h3>
+
+          <div class="balance-row">
+            <span style="color:var(--text-dim)">Ingresos por Ventas</span>
+            <span class="mono font-semibold text-co" id="co-ingresos">$0.00</span>
+          </div>
+          <div class="balance-row">
+            <span style="color:var(--text-dim)">(-) Costo de Mercadería</span>
+            <span class="mono font-semibold" style="color:#f87171" id="co-costo-merc">$0.00</span>
+          </div>
+          <div class="balance-row">
+            <span style="color:var(--text-dim)">Utilidad Bruta</span>
+            <span class="mono font-semibold text-co" id="co-util-bruta">$0.00</span>
+          </div>
+          <div class="balance-row">
+            <span style="color:var(--text-dim)">(-) Gastos Operativos</span>
+            <span class="mono font-semibold" style="color:#f87171" id="co-gastos-op">$0.00</span>
+          </div>
+          <div class="balance-row">
+            <span style="color:var(--text-dim)">(-) Gastos de Marketing</span>
+            <span class="mono font-semibold" style="color:#f87171" id="co-gastos-mkt">$0.00</span>
+          </div>
+          <div class="balance-total">
+            <span class="text-co">UTILIDAD NETA</span>
+            <span class="mono text-co" id="co-utilidad">$0.00</span>
+          </div>
+
+          <button id="btn-cierre" class="btn-primary w-full justify-center mt-5"
+            style="background:linear-gradient(135deg,var(--accent-co),#15803d);color:#fff">
+            📋 Generar Cierre Financiero
+          </button>
+        </div>
+
+        <!-- Gráfico -->
+        <div class="card" style="border-color:rgba(34,197,94,.3)">
+          <h3 class="font-bold mb-3 text-sm" style="color:var(--text-dim)">GRÁFICO FINANCIERO</h3>
+          <div style="position:relative;height:240px">
+            <canvas id="co-chart"></canvas>
+          </div>
+          <div id="co-chart-placeholder" class="flex items-center justify-center h-48 text-sm" style="color:var(--text-dim)">
+            Presiona "Generar Cierre Financiero" para ver el gráfico.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Indicadores adicionales -->
+      <div class="grid gap-4 lg:grid-cols-3">
+        <div class="card">
+          <div class="metric-label">Margen Bruto</div>
+          <div class="metric-value text-co mono" id="co-margen-bruto">--%</div>
+        </div>
+        <div class="card">
+          <div class="metric-label">Margen Neto</div>
+          <div class="metric-value text-co mono" id="co-margen-neto">--%</div>
+        </div>
+        <div class="card">
+          <div class="metric-label">ROI de Campaña</div>
+          <div class="metric-value text-co mono" id="co-roi">--%</div>
+        </div>
+      </div>
+
+      <!-- Nota de integración -->
+      <div class="card mt-4" style="border-color:rgba(34,197,94,.2);background:rgba(34,197,94,.04)">
+        <p class="text-sm" style="color:var(--text-dim)">
+          💡 <strong style="color:var(--accent-co)">Datos integrados:</strong>
+          Los ingresos se toman de <strong>Ventas</strong>, los costos de <strong>Administración</strong>.
+          Esta es la sinergia real entre áreas de la empresa.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+</div><!-- /app -->
+
+  <!-- ===================================================
+       FOOTER GLOBAL — SIMULADOR DE ERRORES
+       =================================================== -->
+  <footer id="error-footer">
+    <div class="footer-left">
+      <div class="pulse-red"></div>
+      <span class="mono" style="font-size:.72rem">sistema_monitor.sh</span>
+      <span style="color:var(--border)">|</span>
+      <span id="footer-uptime" class="mono" style="font-size:.72rem;color:var(--text-dim)">uptime: 00:00:00</span>
+      <span style="color:var(--border)">|</span>
+      <span id="footer-modulo" class="mono" style="font-size:.72rem;color:var(--text-dim)">módulo: software</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <span style="font-size:.72rem;color:var(--text-dim)">¿Qué pasa si algo falla?</span>
+      <button id="btn-trigger-error">⚠️ Simular Error Crítico</button>
+    </div>
+  </footer>
+
+</div><!-- /app -->
+
+<!-- ===================================================
+     MODAL: ERROR CRÍTICO + TÉCNICO DE SISTEMAS
+     =================================================== -->
+<div id="error-overlay">
+  <div id="error-modal">
+    <div class="error-modal-header">
+      <div class="error-modal-title">
+        <div class="error-icon-ring">💥</div>
+        ERROR CRÍTICO DETECTADO
+      </div>
+      <span class="mono" id="error-timestamp" style="font-size:.7rem;color:var(--text-dim)"></span>
+    </div>
+    <div class="error-modal-body">
+      <div class="tech-avatar">
+        <div class="tech-avatar-icon">🧑‍💻</div>
+        <div>
+          <div class="tech-name">Carlos R. — Técnico de Sistemas</div>
+          <div class="tech-status" id="tech-status-msg">Analizando el error... dame un segundo.</div>
+        </div>
+      </div>
+      <div class="error-screen" id="error-screen-content"></div>
+      <div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700">Plan de resolución</div>
+      <div id="fix-steps-container"></div>
+      <button id="btn-fix">🔧 Ejecutar Corrección</button>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================
+     JAVASCRIPT — LÓGICA COMPLETA
+     ===================================================== -->
+<script>
+
+/* -------------------------------------------------------
+   ESTADO GLOBAL COMPARTIDO
+   Todos los módulos leen y escriben aquí para coherencia.
+   ------------------------------------------------------- */
+const estado = {
+  // Software
+  software: {
+    desplegado: false,
+    uptime: 0,
+    rps: 0,
+    latencia: 0,
+  },
+  // Ventas
+  ventas: {
+    ingresos: 0,
+    ventasRealizadas: 0,
+    clientes: 0,
+    leads: 0,
+    prospectos: 0,
+    negociacion: 0,
+    cerradas: 0,
+    campaniaActiva: false,
+    tipoCampania: 'digital',
+    alcance: 0,
+  },
+  // Administración
+  admin: {
+    pedidosProcesados: 0,
+    costoOperativo: 0,
+    stock: [
+      { nombre: 'Laptops',      emoji: '💻', actual: 120, max: 120, costo: 80 },
+      { nombre: 'Smartphones',  emoji: '📱', actual: 200, max: 200, costo: 40 },
+      { nombre: 'Monitores',    emoji: '🖥',  actual: 80,  max: 80,  costo: 60 },
+      { nombre: 'Auriculares',  emoji: '🎧', actual: 150, max: 150, costo: 20 },
+    ],
+    personal: [
+      { area: 'Logística',   cantidad: 12, emoji: '🚚' },
+      { area: 'Almacén',     cantidad: 8,  emoji: '📦' },
+      { area: 'RRHH',        cantidad: 6,  emoji: '👥' },
+      { area: 'Gerencia',    cantidad: 4,  emoji: '💼' },
+      { area: 'Soporte TI',  cantidad: 5,  emoji: '🖥' },
+      { area: 'Finanzas',    cantidad: 13, emoji: '💰' },
+    ],
+  },
+  // Contabilidad (derivada)
+  contabilidad: {
+    cierreListo: false,
+  },
+};
+
+/* -------------------------------------------------------
+   NAVEGACIÓN
+   ------------------------------------------------------- */
+const TABS = [
+  { id: 'software',      label: 'Software',       emoji: '💻', color: 'var(--accent-sw)' },
+  { id: 'ventas',        label: 'Ventas',          emoji: '📣', color: 'var(--accent-vn)' },
+  { id: 'admin',         label: 'Administración',  emoji: '⚙️', color: 'var(--accent-ad)' },
+  { id: 'contabilidad',  label: 'Contabilidad',    emoji: '📊', color: 'var(--accent-co)' },
+];
+
+// Genera los botones de navegación
+const nav = document.getElementById('main-nav');
+TABS.forEach((tab, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'nav-btn';
+  btn.dataset.tab = tab.id;
+  btn.style.setProperty('--active-color', tab.color);
+  btn.innerHTML = `<span class="nav-step">${i + 1}</span> ${tab.emoji} ${tab.label}`;
+  btn.addEventListener('click', () => activarModulo(tab.id));
+  nav.appendChild(btn);
+});
+
+/**
+ * Muestra el módulo indicado y actualiza la navegación.
+ * @param {string} tabId - ID del módulo a mostrar
+ */
+function activarModulo(tabId) {
+  // Ocultar todos los módulos
+  document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+  // Mostrar el módulo seleccionado
+  document.getElementById(`mod-${tabId}`)?.classList.add('active');
+  document.querySelector(`.nav-btn[data-tab="${tabId}"]`)?.classList.add('active');
+
+  // Si es contabilidad, refrescar los datos del balance
+  if (tabId === 'contabilidad') actualizarBalanceUI();
+}
+
+// Cargar el primer módulo al inicio
+activarModulo('software');
+
+/* -------------------------------------------------------
+   MÓDULO 1 — DESARROLLO DE SOFTWARE
+   ------------------------------------------------------- */
+
+const consoleOutput   = document.getElementById('console-output');
+const deployStepsWrap = document.getElementById('deploy-steps');
+const deployBar       = document.getElementById('deploy-bar');
+const deployPercent   = document.getElementById('deploy-percent');
+const deployProgress  = document.getElementById('deploy-progress-wrap');
+const btnDeploy       = document.getElementById('btn-deploy');
+const storePrev       = document.getElementById('store-preview');
+const statusBadge     = document.getElementById('status-badge-wrap');
+const btnVerTienda    = document.getElementById('btn-ver-tienda');
+
+/**
+ * Agrega una línea al log de la consola.
+ * @param {string} text    - Texto del mensaje
+ * @param {string} tipo    - 'ok' | 'warn' | 'err' | 'info'
+ */
+function consoleLog(text, tipo = 'info') {
+  const now = new Date();
+  const t = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="log-time">${t}</span><span class="log-${tipo}">${text}</span>`;
+  // Eliminar cursor si existe
+  const cursor = consoleOutput.querySelector('.cursor-blink');
+  if (cursor) cursor.parentElement.remove();
+  consoleOutput.appendChild(line);
+  // Cursor al final
+  const cursorLine = document.createElement('div');
+  cursorLine.className = 'log-line';
+  cursorLine.innerHTML = `<span class="log-time">&nbsp;</span><span class="log-info"><span class="cursor-blink"></span></span>`;
+  consoleOutput.appendChild(cursorLine);
+  consoleOutput.scrollTop = consoleOutput.scrollHeight;
+}
+
+/**
+ * Actualiza el ícono y clase de un paso de deploy.
+ * @param {string} stepId  - 'step-1' … 'step-5'
+ * @param {string} estado  - 'pending' | 'active' | 'done'
+ */
+function actualizarStep(stepId, est) {
+  const el = document.getElementById(stepId);
+  if (!el) return;
+  el.className = `deploy-step ${est}`;
+  const icon = el.querySelector('.step-icon');
+  if (est === 'done')   icon.textContent = '✅';
+  else if (est === 'active') icon.textContent = '⏳';
+  else icon.textContent = '⬜';
+}
+
+/** Secuencia completa de deploy animado */
+async function ejecutarDeploy() {
+  if (estado.software.desplegado) return;
+  btnDeploy.disabled = true;
+
+  deployStepsWrap.style.display = 'block';
+  deployProgress.style.display = 'block';
+
+  const stepTexts = {
+    'step-1': ['Compilando TypeScript → JavaScript...', 'Minificando bundles...', 'Tree-shaking completado ✓'],
+    'step-2': ['Ejecutando suite de pruebas...', 'Cobertura: 94.2%...', '127 tests pasados ✓'],
+    'step-3': ['Construyendo imagen Docker...', 'Capa base: node:20-alpine...', 'Imagen: 128MB ✓'],
+    'step-4': ['Autenticando con AWS ECR...', 'Pushing imagen a us-east-1...', 'Pod desplegado en cluster ✓'],
+    'step-5': ['Configurando certificado SSL...', 'Propagando DNS...', 'Dominio activo: tienda.instituto-tech.dev ✓'],
+  };
+
+  const steps = ['step-1','step-2','step-3','step-4','step-5'];
+
+  for (let i = 0; i < steps.length; i++) {
+    const sid = steps[i];
+    actualizarStep(sid, 'active');
+    for (const msg of stepTexts[sid]) {
+      consoleLog(`  » ${msg}`, 'info');
+      await sleep(600);
+    }
+    actualizarStep(sid, 'done');
+    const pct = Math.round(((i + 1) / steps.length) * 100);
+    deployBar.style.width = pct + '%';
+    deployPercent.textContent = pct + '%';
+    await sleep(400);
+  }
+
+  // Finalizar
+  consoleLog('', 'info');
+  consoleLog('🎉 ¡Despliegue exitoso! Sistema ONLINE.', 'ok');
+  consoleLog('🌐 URL: https://tienda.instituto-tech.dev', 'ok');
+
+  // Mostrar preview y badge
+  storePrev.classList.add('visible');
+  statusBadge.style.setProperty('display', 'flex', 'important');
+  btnVerTienda.style.display = 'inline-flex';
+
+  // Simular métricas del servidor
+  estado.software.desplegado = true;
+  estado.software.uptime = 100;
+  estado.software.rps = Math.floor(Math.random() * 400) + 150;
+  estado.software.latencia = Math.floor(Math.random() * 20) + 8;
+
+  document.getElementById('sw-uptime').textContent = '99.9%';
+  document.getElementById('sw-rps').textContent = estado.software.rps;
+  document.getElementById('sw-latency').textContent = `${estado.software.latencia}ms`;
+
+  animarBarra('sw-cpu-bar', 'sw-cpu-val', 62);
+  animarBarra('sw-ram-bar', 'sw-ram-val', 78);
+
+  btnDeploy.textContent = '✅ Aplicación Desplegada';
+  btnDeploy.style.background = 'var(--muted)';
+  btnDeploy.style.color = 'var(--text-dim)';
+}
+
+btnDeploy.addEventListener('click', ejecutarDeploy);
+
+/* -------------------------------------------------------
+   MÓDULO 2 — VENTAS
+   ------------------------------------------------------- */
+
+// Mensajes de actividad de campaña según tipo
+const mensajesCampania = {
+  digital: [
+    '📱 Anuncio en Instagram alcanzó 2,400 impresiones',
+    '🔍 Click en Google Ads de usuario en Guayaquil',
+    '💬 Lead calificado desde Facebook Ads',
+    '📲 TikTok Ad generó 180 visitas a tienda',
+    '🎯 Retargeting capturó cliente interesado',
+    '📧 Lead de LinkedIn Ads confirmado',
+  ],
+  email: [
+    '✉️ Email abierto: tasa 38.2%',
+    '📬 150 correos entregados en bandeja',
+    '🖱 Click en CTA de newsletter — conversión',
+    '📩 Respuesta de cliente interesado recibida',
+    '🎁 Oferta de email redimida por cliente',
+    '📊 Segmento VIP respondió a campaña',
+  ],
+  eventos: [
+    '🎪 Stand visitado por grupo de 15 personas',
+    '🤝 Contacto de negocio intercambiado',
+    '🎁 Muestra gratuita entregada — alta intención',
+    '📸 Publicación de evento viral (+500 shares)',
+    '🎤 Ponencia completada — 80 asistentes',
+    '🏷 Descuento especial de evento aplicado',
+  ],
+};
+
+// Variables del módulo ventas
+let campaignInterval = null;
+let campaignTickCount = 0;
+
+// Botones de tipo campaña
+document.querySelectorAll('.campaign-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (estado.ventas.campaniaActiva) return; // No cambiar durante campaña
+    document.querySelectorAll('.campaign-type-btn').forEach(b => {
+      b.style.background = 'var(--muted)';
+      b.style.color = 'var(--text-dim)';
+      b.style.borderColor = 'transparent';
+      b.classList.remove('active-campaign');
+    });
+    btn.style.background = 'rgba(255,107,53,.2)';
+    btn.style.color = 'var(--accent-vn)';
+    btn.style.borderColor = 'var(--accent-vn)';
+    btn.classList.add('active-campaign');
+    estado.ventas.tipoCampania = btn.dataset.type;
+  });
+});
+
+/** Agrega una entrada al log de actividad de ventas */
+function agregarLogVentas(mensaje) {
+  const log = document.getElementById('vn-log');
+  // Limpiar placeholder si existe
+  if (log.children.length === 1 && log.children[0].textContent.includes('Esperando')) {
+    log.innerHTML = '';
+  }
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = `<span style="color:var(--text-dim);font-size:.7rem">${new Date().toLocaleTimeString()}</span> ${mensaje}`;
+  log.prepend(entry);
+  if (log.children.length > 20) log.lastElementChild.remove();
+}
+
+/** Tick de campaña: actualiza métricas y log */
+function tickCampania() {
+  campaignTickCount++;
+  const tipo = estado.ventas.tipoCampania;
+  const msgs = mensajesCampania[tipo];
+
+  // Ingresos aleatorios por tick
+  const ventaNueva = Math.random() < 0.65;
+  if (ventaNueva) {
+    const monto = Math.floor(Math.random() * 900) + 100;
+    estado.ventas.ingresos += monto;
+    estado.ventas.ventasRealizadas++;
+    if (Math.random() < 0.7) estado.ventas.clientes++;
+  }
+
+  // Leads del embudo
+  estado.ventas.leads      = estado.ventas.ventasRealizadas * 6 + Math.floor(Math.random() * 10);
+  estado.ventas.prospectos = Math.floor(estado.ventas.leads * 0.55);
+  estado.ventas.negociacion= Math.floor(estado.ventas.prospectos * 0.45);
+  estado.ventas.cerradas   = estado.ventas.ventasRealizadas;
+
+  // Alcance de campaña
+  estado.ventas.alcance = Math.min(campaignTickCount * 120, 10000);
+
+  // Actualizar UI
+  actualizarUIVentas();
+
+  // Log de actividad
+  const msg = msgs[Math.floor(Math.random() * msgs.length)];
+  agregarLogVentas(msg);
+  if (ventaNueva) {
+    const monto = estado.ventas.ingresos;
+    agregarLogVentas(`💵 Venta cerrada — Total acumulado: $${monto.toLocaleString()}`);
+  }
+
+  // Parar después de 25 ticks
+  if (campaignTickCount >= 25) {
+    clearInterval(campaignInterval);
+    campaignInterval = null;
+    estado.ventas.campaniaActiva = false;
+    document.getElementById('btn-campaign').disabled = false;
+    document.getElementById('btn-campaign').textContent = '🔄 Relanzar Campaña';
+    agregarLogVentas('🏁 Campaña finalizada — revisa Contabilidad para el cierre.');
+    actualizarBalanceUI();
+  }
+}
+
+function actualizarUIVentas() {
+  document.getElementById('vn-ingresos').textContent   = `$${estado.ventas.ingresos.toLocaleString()}`;
+  document.getElementById('vn-ventas').textContent     = estado.ventas.ventasRealizadas;
+  document.getElementById('vn-clientes').textContent   = estado.ventas.clientes;
+  const conv = estado.ventas.leads > 0
+    ? ((estado.ventas.cerradas / estado.ventas.leads) * 100).toFixed(1)
+    : '0.0';
+  document.getElementById('vn-conversion').textContent = `${conv}%`;
+
+  // Embudo
+  document.getElementById('funnel-leads').textContent       = estado.ventas.leads;
+  document.getElementById('funnel-prospects').textContent   = estado.ventas.prospectos;
+  document.getElementById('funnel-negoc').textContent       = estado.ventas.negociacion;
+  document.getElementById('funnel-cerradas').textContent    = estado.ventas.cerradas;
+
+  // Barra de alcance
+  const reachPct = Math.min((estado.ventas.alcance / 10000) * 100, 100);
+  document.getElementById('vn-reach-bar').style.width = reachPct + '%';
+  document.getElementById('vn-reach-val').textContent = `${estado.ventas.alcance.toLocaleString()} personas`;
+}
+
+document.getElementById('btn-campaign').addEventListener('click', () => {
+  if (campaignInterval) return;
+  estado.ventas.campaniaActiva = true;
+  campaignTickCount = 0;
+  document.getElementById('vn-status').style.display = 'block';
+  document.getElementById('btn-campaign').disabled = true;
+  agregarLogVentas('🚀 ¡Campaña lanzada! Generando tráfico...');
+  campaignInterval = setInterval(tickCampania, 700);
+});
+
+/* -------------------------------------------------------
+   MÓDULO 3 — ADMINISTRACIÓN
+   ------------------------------------------------------- */
+
+/** Renderiza la lista de stock */
+function renderStock() {
+  const list = document.getElementById('stock-list');
+  list.innerHTML = '';
+  estado.admin.stock.forEach((item, i) => {
+    const pct = Math.round((item.actual / item.max) * 100);
+    const color = pct > 50 ? 'var(--accent-ad)' : pct > 20 ? '#facc15' : '#f87171';
+    list.innerHTML += `
+      <div class="stock-item">
+        <span style="min-width:24px">${item.emoji}</span>
+        <div>
+          <div style="font-size:.82rem;font-weight:600">${item.nombre}</div>
+          <div class="metric-label">${item.actual}/${item.max} uds.</div>
+        </div>
+        <div class="stock-bar-wrap">
+          <div class="progress-track">
+            <div class="progress-fill" id="stock-bar-${i}"
+              style="width:${pct}%;background:${color};transition:width .6s ease"></div>
+          </div>
+        </div>
+        <span class="mono text-xs" style="min-width:36px;text-align:right;color:${color}">${pct}%</span>
+      </div>`;
+  });
+}
+
+/** Renderiza el personal por área */
+function renderPersonal() {
+  const list = document.getElementById('personal-list');
+  list.innerHTML = '';
+  estado.admin.personal.forEach(p => {
+    list.innerHTML += `
+      <div class="flex items-center justify-between py-2 border-b" style="border-color:var(--border);font-size:.82rem">
+        <span>${p.emoji} ${p.area}</span>
+        <span class="mono font-semibold text-ad">${p.cantidad}</span>
+      </div>`;
+  });
+}
+
+/** Agrega alerta logística */
+function agregarAlerta(msg, tipo = 'info') {
+  const wrap = document.getElementById('ad-alerts');
+  if (wrap.querySelector('.text-sm[style]')?.textContent.includes('Sin alertas')) wrap.innerHTML = '';
+  const colors = {
+    info:  { bg: 'rgba(0,229,255,.08)',   border: 'rgba(0,229,255,.3)',   text: 'var(--accent-sw)' },
+    warn:  { bg: 'rgba(250,204,21,.08)',  border: 'rgba(250,204,21,.3)',  text: '#facc15' },
+    ok:    { bg: 'rgba(34,197,94,.08)',   border: 'rgba(34,197,94,.3)',   text: 'var(--accent-co)' },
+    err:   { bg: 'rgba(248,113,113,.08)', border: 'rgba(248,113,113,.3)', text: '#f87171' },
+  };
+  const c = colors[tipo];
+  const el = document.createElement('div');
+  el.className = 'alert-toast';
+  el.style.cssText = `background:${c.bg};border-color:${c.border};color:${c.text}`;
+  el.innerHTML = msg;
+  wrap.prepend(el);
+  if (wrap.children.length > 5) wrap.lastElementChild.remove();
+}
+
+// Inicializar listas de admin
+renderStock();
+renderPersonal();
+
+document.getElementById('btn-pedidos').addEventListener('click', () => {
+  const vendidos = estado.ventas.ventasRealizadas;
+  if (vendidos === 0) {
+    agregarAlerta('⚠️ No hay pedidos de ventas aún. Lanza la campaña primero.', 'warn');
+    return;
+  }
+
+  // Calcular cuánto stock descontar
+  const descuento = Math.min(Math.floor(vendidos / 2) + 1, 5);
+
+  estado.admin.stock.forEach((item, i) => {
+    const quitar = Math.min(descuento + Math.floor(Math.random() * 3), item.actual);
+    item.actual = Math.max(0, item.actual - quitar);
+    const costoProd = quitar * item.costo;
+    estado.admin.costoOperativo += costoProd;
+  });
+
+  estado.admin.pedidosProcesados += descuento + 1;
+  estado.admin.costoOperativo += Math.floor(Math.random() * 200) + 50; // Logística
+
+  // Actualizar UI
+  renderStock();
+  document.getElementById('ad-pedidos').textContent = estado.admin.pedidosProcesados;
+  document.getElementById('ad-costo').textContent   = `$${estado.admin.costoOperativo.toLocaleString()}`;
+  document.getElementById('ad-personal').textContent = 48 + estado.admin.pedidosProcesados;
+
+  // Alertas
+  agregarAlerta(`🚚 Logística en camino — ${estado.admin.pedidosProcesados} pedido(s) despachados`, 'ok');
+
+  // Alerta si stock bajo
+  estado.admin.stock.forEach(item => {
+    const pct = (item.actual / item.max) * 100;
+    if (pct < 30 && pct > 0) {
+      agregarAlerta(`⚠️ Stock bajo de ${item.emoji} ${item.nombre}: ${item.actual} unidades`, 'warn');
+    }
+    if (item.actual === 0) {
+      agregarAlerta(`❌ ${item.emoji} ${item.nombre} agotado. Solicitar reposición.`, 'err');
+    }
+  });
+
+  actualizarBalanceUI();
+});
+
+/* -------------------------------------------------------
+   MÓDULO 4 — CONTABILIDAD
+   ------------------------------------------------------- */
+
+let graficoContable = null;
+
+/** Calcula y actualiza el balance contable en la UI */
+function actualizarBalanceUI() {
+  const ingresos    = estado.ventas.ingresos;
+  const costoMerc   = Math.round(ingresos * 0.40); // 40% del ingreso
+  const utilBruta   = ingresos - costoMerc;
+  const gastosOp    = estado.admin.costoOperativo;
+  const gastosMkt   = Math.round(ingresos * 0.08); // 8% en marketing
+  const utilidadNeta = utilBruta - gastosOp - gastosMkt;
+
+  const fmt = (n) => `$${Math.max(0, n).toLocaleString('es-EC', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  document.getElementById('co-ingresos').textContent    = fmt(ingresos);
+  document.getElementById('co-costo-merc').textContent  = fmt(costoMerc);
+  document.getElementById('co-util-bruta').textContent  = fmt(utilBruta);
+  document.getElementById('co-gastos-op').textContent   = fmt(gastosOp);
+  document.getElementById('co-gastos-mkt').textContent  = fmt(gastosMkt);
+  document.getElementById('co-utilidad').textContent    = fmt(utilidadNeta);
+}
+
+// Ejecutar al cargar para mostrar $0 correctamente
+actualizarBalanceUI();
+
+/** Cierre financiero con gráfico */
+document.getElementById('btn-cierre').addEventListener('click', () => {
+  const ingresos     = estado.ventas.ingresos;
+  const costoMerc    = Math.round(ingresos * 0.40);
+  const utilBruta    = ingresos - costoMerc;
+  const gastosOp     = estado.admin.costoOperativo;
+  const gastosMkt    = Math.round(ingresos * 0.08);
+  const utilidadNeta = utilBruta - gastosOp - gastosMkt;
+
+  // Actualizar valores
+  actualizarBalanceUI();
+
+  // Indicadores
+  const margenBruto  = ingresos > 0 ? ((utilBruta  / ingresos) * 100).toFixed(1) : '0.0';
+  const margenNeto   = ingresos > 0 ? ((Math.max(0, utilidadNeta) / ingresos) * 100).toFixed(1) : '0.0';
+  const roi          = gastosMkt > 0 ? ((Math.max(0, utilidadNeta) / (gastosOp + gastosMkt)) * 100).toFixed(1) : '0.0';
+
+  document.getElementById('co-margen-bruto').textContent = `${margenBruto}%`;
+  document.getElementById('co-margen-neto').textContent  = `${margenNeto}%`;
+  document.getElementById('co-roi').textContent          = `${roi}%`;
+
+  // Gráfico
+  document.getElementById('co-chart-placeholder').style.display = 'none';
+  const ctx = document.getElementById('co-chart').getContext('2d');
+
+  if (graficoContable) graficoContable.destroy();
+
+  graficoContable = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Ingresos', 'Costo Merc.', 'Utilidad Bruta', 'Gastos Op.', 'Mkt', 'Utilidad Neta'],
+      datasets: [{
+        label: 'USD',
+        data: [
+          ingresos,
+          costoMerc,
+          utilBruta,
+          gastosOp,
+          gastosMkt,
+          Math.max(0, utilidadNeta),
+        ],
+        backgroundColor: [
+          'rgba(34,197,94,.8)',
+          'rgba(248,113,113,.7)',
+          'rgba(34,197,94,.5)',
+          'rgba(248,113,113,.5)',
+          'rgba(250,204,21,.7)',
+          utilidadNeta >= 0 ? 'rgba(34,197,94,1)' : 'rgba(248,113,113,1)',
+        ],
+        borderColor: [
+          'rgba(34,197,94,1)',
+          'rgba(248,113,113,1)',
+          'rgba(34,197,94,.8)',
+          'rgba(248,113,113,.8)',
+          'rgba(250,204,21,1)',
+          utilidadNeta >= 0 ? '#22c55e' : '#f87171',
+        ],
+        borderWidth: 2,
+        borderRadius: 6,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 1000, easing: 'easeOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` $${ctx.raw.toLocaleString('es-EC', { minimumFractionDigits: 2 })}`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: { color: '#7070a0', font: { size: 10, family: 'DM Mono' } },
+          grid:  { color: 'rgba(255,255,255,.05)' },
+        },
+        y: {
+          ticks: {
+            color: '#7070a0',
+            font:  { family: 'DM Mono', size: 10 },
+            callback: v => `$${v.toLocaleString()}`,
+          },
+          grid: { color: 'rgba(255,255,255,.05)' },
+        },
+      },
+    },
+  });
+
+  estado.contabilidad.cierreListo = true;
+});
+
+/* -------------------------------------------------------
+   UTILIDADES
+   ------------------------------------------------------- */
+
+/** Promesa de espera en milisegundos */
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Anima una barra de progreso y su etiqueta de valor.
+ * @param {string} barId    - ID del elemento barra
+ * @param {string} valId    - ID del elemento texto
+ * @param {number} target   - Valor objetivo (0–100)
+ */
+function animarBarra(barId, valId, target) {
+  const bar = document.getElementById(barId);
+  const val = document.getElementById(valId);
+  let current = 0;
+  const step = target / 30;
+  const iv = setInterval(() => {
+    current = Math.min(current + step, target);
+    bar.style.width = current + '%';
+    val.textContent = Math.round(current) + '%';
+    if (current >= target) clearInterval(iv);
+  }, 30);
+}
+
+/* -------------------------------------------------------
+   FOOTER: RELOJ UPTIME
+   ------------------------------------------------------- */
+let uptimeSeconds = 0;
+setInterval(() => {
+  uptimeSeconds++;
+  const h = String(Math.floor(uptimeSeconds / 3600)).padStart(2,'0');
+  const m = String(Math.floor((uptimeSeconds % 3600) / 60)).padStart(2,'0');
+  const s = String(uptimeSeconds % 60).padStart(2,'0');
+  document.getElementById('footer-uptime').textContent = `uptime: ${h}:${m}:${s}`;
+}, 1000);
+
+// Actualizar módulo activo en footer cuando cambia la pestaña
+const _origActivar = activarModulo;
+// (ya está activo, simplemente se actualiza en el nav click; usamos un observer)
+const footerModulo = document.getElementById('footer-modulo');
+const navObserver = new MutationObserver(() => {
+  const activeBtn = document.querySelector('.nav-btn.active');
+  if (activeBtn) footerModulo.textContent = `módulo: ${activeBtn.dataset.tab}`;
+});
+navObserver.observe(document.getElementById('main-nav'), { attributes: true, subtree: true });
+
+/* -------------------------------------------------------
+   SISTEMA DE ERRORES SIMULADOS
+   ------------------------------------------------------- */
+
+/**
+ * Definición de errores posibles por módulo.
+ * Cada error tiene:
+ *  - code:    código de error estilo sistema
+ *  - titulo:  nombre del error
+ *  - detalle: descripción técnica
+ *  - stack:   traza falsa
+ *  - pasos:   pasos interactivos que Carlos ejecuta para resolverlo
+ *  - mensajesCarlos: mensajes del técnico en cada fase
+ */
+const ERRORES_POR_MODULO = {
+  software: [
+    {
+      code: 'ERR_0x4F2A',
+      titulo: 'Segmentation Fault — Proceso Node.js',
+      detalle: 'El proceso del servidor web terminó inesperadamente. Puerto 3000 no responde.',
+      stack: 'at Server.<anonymous> (server.js:142:8)\nat emitErrorNT (node:net:1788:8)\nat process.nextTick (node:internal/process:192:5)',
+      pasos: [
+        'Detectar proceso zombi en puerto 3000',
+        'Liberar memoria heap acumulada',
+        'Reiniciar contenedor Docker del servicio',
+        'Verificar health check del endpoint /ping',
+      ],
+      mensajesCarlos: [
+        'Veo el problema — el proceso de Node se cayó. Ya voy.',
+        'Matando el proceso zombi... hecho.',
+        'Limpiando memoria... esto pasa cuando hay memory leaks.',
+        'Reiniciando el contenedor Docker... 🐳',
+        '¡Listo! El servidor volvió al 100%. Eso fue un memory leak clásico.',
+      ],
+    },
+    {
+      code: 'ERR_0x8B1C',
+      titulo: 'Build Pipeline Failure — CI/CD',
+      detalle: 'El pipeline de integración continua falló en la etapa de tests. 3 tests unitarios rotos.',
+      stack: 'FAIL src/api/auth.test.js\n  ✕ should validate JWT token (2041ms)\n  ✕ should reject expired tokens (timeout)',
+      pasos: [
+        'Identificar tests fallidos en el pipeline',
+        'Revisar cambios recientes en rama main',
+        'Aplicar hotfix en módulo de autenticación',
+        'Re-ejecutar suite de tests completa',
+      ],
+      mensajesCarlos: [
+        'El pipeline tronó. Veo los tests rotos — clásico después de un merge apresurado.',
+        'Aislando los tests que fallaron...',
+        'El problema está en el módulo JWT. Aplicando fix...',
+        'Re-corriendo los tests... verde en 3, 2, 1...',
+        '¡Pipeline verde! Esos tests estaban usando un token expirado en el mock. Ya corregido.',
+      ],
+    },
+  ],
+  ventas: [
+    {
+      code: 'ERR_CRM_503',
+      titulo: 'CRM Desconectado — Pérdida de Leads',
+      detalle: 'La integración con el CRM dejó de sincronizar. Leads de la campaña no se están guardando.',
+      stack: 'SalesforceAPI: Connection timeout after 30s\nRetry 1/3... failed\nRetry 2/3... failed\nRetry 3/3... failed — giving up',
+      pasos: [
+        'Verificar estado de la API de Salesforce',
+        'Revisar credenciales OAuth expiradas',
+        'Reconectar integración con nuevo token',
+        'Sincronizar leads perdidos desde el buffer',
+      ],
+      mensajesCarlos: [
+        'El CRM se desconectó — los leads se están perdiendo. Urgente.',
+        'Revisando las credenciales de la API... efectivamente, expiró el token.',
+        'Generando nuevo token OAuth... conectando...',
+        'Sincronizando los leads que quedaron en el buffer local...',
+        '¡CRM reconectado! Recuperamos todos los leads. Ninguno se perdió.',
+      ],
+    },
+    {
+      code: 'ERR_PAYMENT_422',
+      titulo: 'Pasarela de Pago Rechazando Transacciones',
+      detalle: 'El 40% de las transacciones están siendo rechazadas por error de validación en la pasarela.',
+      stack: 'PaymentGateway: 422 Unprocessable Entity\nField: card.cvv — invalid format\nAffected transactions: 14 of last 35',
+      pasos: [
+        'Identificar transacciones rechazadas en cola',
+        'Detectar campo inválido en el formulario',
+        'Actualizar validación del campo CVV en frontend',
+        'Reprocesar transacciones fallidas',
+      ],
+      mensajesCarlos: [
+        'Tenemos un problema serio — muchas ventas están fallando en el pago.',
+        'Viendo los logs... el problema está en la validación del CVV.',
+        'Alguien cambió el regex de validación y rompió el campo. Corrigiendo...',
+        'Reprocesando las transacciones que quedaron en cola...',
+        '¡Listo! Las ventas vuelven a fluir. Eran 14 transacciones atascadas — todas recuperadas.',
+      ],
+    },
+  ],
+  admin: [
+    {
+      code: 'ERR_DB_DEADLOCK',
+      titulo: 'Deadlock en Base de Datos de Inventario',
+      detalle: 'Dos procesos de actualización de stock se bloquearon mutuamente. Inventario congelado.',
+      stack: 'PostgreSQL ERROR: deadlock detected\nDETAIL: Process 8423 waits for ShareLock on transaction 7891\nProcess 7891 waits for ShareLock on transaction 8423\nHINT: See server log for query details.',
+      pasos: [
+        'Detectar transacciones bloqueadas en PostgreSQL',
+        'Terminar proceso conflictivo con menor prioridad',
+        'Liberar locks de las tablas afectadas',
+        'Reintentar operaciones de actualización de stock',
+      ],
+      mensajesCarlos: [
+        'La base de datos tiene un deadlock — el inventario está congelado.',
+        'Listando transacciones bloqueadas... encontré los dos procesos culpables.',
+        'Terminando el proceso de menor prioridad y liberando los locks...',
+        'Reintentando las actualizaciones de stock de forma serializada...',
+        '¡Deadlock resuelto! El inventario ya actualiza correctamente. Voy a agregar un timeout para que no vuelva a pasar.',
+      ],
+    },
+    {
+      code: 'ERR_SYNC_401',
+      titulo: 'Fallo de Sincronización — Sistema de RRHH',
+      detalle: 'El sistema de nómina no puede autenticarse con el módulo de RRHH. Personal no puede marcar asistencia.',
+      stack: 'HRSystem: 401 Unauthorized\nToken: Bearer eyJhbGc... [EXPIRED]\nEndpoint: /api/v2/attendance/check-in\nLast success: 2026-06-04 23:59:01',
+      pasos: [
+        'Verificar sesión expirada en sistema RRHH',
+        'Revocar token comprometido',
+        'Emitir nuevo certificado de servicio',
+        'Validar acceso de todos los empleados',
+      ],
+      mensajesCarlos: [
+        'El sistema de RRHH no acepta conexiones — los empleados no pueden fichar.',
+        'El token de servicio venció a medianoche. Eso explica todo.',
+        'Revocando el token viejo por seguridad... emitiendo uno nuevo...',
+        'Probando check-in con las credenciales nuevas... perfecto.',
+        '¡Sistema RRHH restaurado! 48 empleados pueden volver a registrar asistencia.',
+      ],
+    },
+  ],
+  contabilidad: [
+    {
+      code: 'ERR_CALC_NaN',
+      titulo: 'Cálculo Financiero Retornando NaN',
+      detalle: 'La función de cierre contable está produciendo valores NaN en utilidad neta. Reporte corrupto.',
+      stack: 'TypeError: Cannot read properties of undefined\nat calcularUtilidad (contabilidad.js:287)\nat generarCierre (contabilidad.js:341)\nResult: utilidadNeta = NaN — report aborted',
+      pasos: [
+        'Localizar función con división por cero',
+        'Agregar validación de datos de entrada',
+        'Recalcular con valores saneados',
+        'Validar integridad del reporte generado',
+      ],
+      mensajesCarlos: [
+        'El cierre financiero está produciendo NaN — eso significa que algo se divide por cero.',
+        'Revisando la función calcularUtilidad... ajá, falta un guard clause.',
+        'Agregando validación: si ingresos son 0, retorna 0 en lugar de dividir...',
+        'Recalculando todos los valores con datos saneados...',
+        '¡Reporte corregido! Era una división por cero cuando no había ingresos registrados. Clásico error de programación.',
+      ],
+    },
+    {
+      code: 'ERR_EXPORT_500',
+      titulo: 'Fallo al Exportar Reporte PDF',
+      detalle: 'El servidor de generación de PDFs se quedó sin memoria al procesar el balance anual.',
+      stack: 'PDFService: Java heap space OutOfMemoryError\nat com.report.PdfGenerator.render(PdfGenerator.java:512)\nHeap used: 2048MB / 2048MB\nGC overhead limit exceeded',
+      pasos: [
+        'Liberar memoria del generador PDF (GC forzado)',
+        'Reducir resolución de gráficos en el reporte',
+        'Dividir reporte en páginas más pequeñas',
+        'Re-generar y exportar PDF final',
+      ],
+      mensajesCarlos: [
+        'El servidor de PDF se quedó sin RAM. El balance anual es muy pesado.',
+        'Forzando el garbage collector de Java... liberando heap...',
+        'Optimizando la resolución de los gráficos para reducir el tamaño...',
+        'Generando el PDF por secciones para no saturar la memoria...',
+        '¡PDF generado exitosamente! Ahora pesa 2.1MB en lugar de los 180MB que intentaba hacer antes. Optimizado.',
+      ],
+    },
+  ],
+};
+
+/* Estado del modal de error */
+let errorActivo = false;
+let fixStep = 0;
+let fixPasos = [];
+let fixMensajes = [];
+let fixInterval = null;
+
+/** Obtiene el módulo activo actual */
+function getModuloActivo() {
+  const activeBtn = document.querySelector('.nav-btn.active');
+  return activeBtn ? activeBtn.dataset.tab : 'software';
+}
+
+/** Escoge un error aleatorio según el módulo activo */
+function elegirError(modulo) {
+  const lista = ERRORES_POR_MODULO[modulo] || ERRORES_POR_MODULO['software'];
+  return lista[Math.floor(Math.random() * lista.length)];
+}
+
+/** Muestra el modal de error con el error del módulo activo */
+function mostrarError() {
+  if (errorActivo) return;
+  errorActivo = true;
+  fixStep = 0;
+
+  const modulo = getModuloActivo();
+  const error  = elegirError(modulo);
+  fixPasos    = error.pasos;
+  fixMensajes = error.mensajesCarlos;
+
+  // Timestamp
+  document.getElementById('error-timestamp').textContent = new Date().toLocaleTimeString('es-EC');
+
+  // Mensaje inicial del técnico
+  document.getElementById('tech-status-msg').textContent = fixMensajes[0];
+
+  // Pantalla de error
+  document.getElementById('error-screen-content').innerHTML = `
+    <div class="err-code">▶ SYSTEM ERROR ${error.code}</div>
+    <div class="err-detail">✗ ${error.titulo}</div>
+    <div style="margin:.3rem 0;color:#555580">─────────────────────────────────</div>
+    <div class="err-dim">${error.detalle}</div>
+    <div style="margin:.3rem 0;color:#555580">─────────────────────────────────</div>
+    <div class="err-stack">${error.stack.replace(/\n/g,'<br>')}</div>
+  `;
+
+  // Pasos de resolución
+  const container = document.getElementById('fix-steps-container');
+  container.innerHTML = '';
+  error.pasos.forEach((paso, i) => {
+    const div = document.createElement('div');
+    div.className = 'fix-step';
+    div.id = `fix-step-${i}`;
+    div.innerHTML = `
+      <div class="fix-step-num">${i + 1}</div>
+      <div class="fix-step-text">${paso}</div>
+    `;
+    container.appendChild(div);
+  });
+
+  // Botón reset
+  const btnFix = document.getElementById('btn-fix');
+  btnFix.textContent = '🔧 Ejecutar Corrección';
+  btnFix.className = '';
+  btnFix.style.cssText = '';
+  btnFix.disabled = false;
+  btnFix.style.display = 'flex';
+  btnFix.style.alignItems = 'center';
+  btnFix.style.justifyContent = 'center';
+  btnFix.style.gap = '.5rem';
+  btnFix.style.width = '100%';
+  btnFix.style.padding = '.75rem';
+  btnFix.style.borderRadius = '10px';
+  btnFix.style.border = 'none';
+  btnFix.style.cursor = 'pointer';
+  btnFix.style.fontFamily = "'Syne', sans-serif";
+  btnFix.style.fontWeight = '700';
+  btnFix.style.fontSize = '.9rem';
+  btnFix.style.background = 'linear-gradient(135deg, #f87171, #dc2626)';
+  btnFix.style.color = '#fff';
+  btnFix.style.marginTop = '1rem';
+  btnFix.style.transition = 'all .2s';
+
+  // Mostrar overlay
+  document.getElementById('error-overlay').classList.add('visible');
+  document.getElementById('btn-trigger-error').disabled = true;
+}
+
+/** Ejecuta el siguiente paso de corrección */
+async function ejecutarSiguientePaso() {
+  const btnFix = document.getElementById('btn-fix');
+
+  if (fixStep >= fixPasos.length) return;
+
+  btnFix.disabled = true;
+  btnFix.textContent = '⏳ Ejecutando...';
+
+  // Marcar paso como activo
+  const stepEl = document.getElementById(`fix-step-${fixStep}`);
+  if (stepEl) stepEl.className = 'fix-step active';
+
+  // Mensaje del técnico para este paso
+  const msgIndex = Math.min(fixStep + 1, fixMensajes.length - 1);
+  document.getElementById('tech-status-msg').textContent = fixMensajes[msgIndex];
+
+  // Esperar (simulando trabajo)
+  await sleep(1800);
+
+  // Marcar como hecho
+  if (stepEl) stepEl.className = 'fix-step done';
+  fixStep++;
+
+  if (fixStep < fixPasos.length) {
+    // Todavía hay pasos
+    btnFix.disabled = false;
+    btnFix.textContent = `🔧 Siguiente paso (${fixStep}/${fixPasos.length})`;
+  } else {
+    // ¡Todo resuelto!
+    document.getElementById('tech-status-msg').textContent = fixMensajes[fixMensajes.length - 1];
+    btnFix.disabled = false;
+    btnFix.textContent = '✅ ¡Error Resuelto! — Cerrar';
+    btnFix.style.background = 'linear-gradient(135deg, var(--accent-co), #15803d)';
+
+    // Cambiar icono del modal
+    document.querySelector('.error-icon-ring').textContent = '✅';
+    document.querySelector('.error-icon-ring').style.animation = 'none';
+    document.querySelector('.error-icon-ring').style.background = 'rgba(34,197,94,.2)';
+    document.querySelector('.error-icon-ring').style.borderColor = 'rgba(34,197,94,.5)';
+    document.querySelector('.error-modal-header').style.background = 'linear-gradient(135deg, rgba(34,197,94,.1), rgba(21,128,61,.06))';
+    document.querySelector('.error-modal-header').style.borderBottomColor = 'rgba(34,197,94,.3)';
+    document.querySelector('.error-modal-title').style.color = 'var(--accent-co)';
+    document.querySelector('.error-modal-title').childNodes[1].textContent = ' SISTEMA RESTAURADO';
+  }
+}
+
+/** Cierra el modal de error */
+function cerrarModal() {
+  document.getElementById('error-overlay').classList.remove('visible');
+  errorActivo = false;
+  fixStep = 0;
+  document.getElementById('btn-trigger-error').disabled = false;
+  // Restaurar header del modal para siguiente uso
+  const header = document.querySelector('.error-modal-header');
+  header.style.background = '';
+  header.style.borderBottomColor = '';
+  document.querySelector('.error-modal-title').style.color = '';
+  document.querySelector('.error-icon-ring').textContent = '💥';
+  document.querySelector('.error-icon-ring').style.animation = '';
+  document.querySelector('.error-icon-ring').style.background = '';
+  document.querySelector('.error-icon-ring').style.borderColor = '';
+  document.querySelector('.error-modal-title').childNodes[1].textContent = ' ERROR CRÍTICO DETECTADO';
+}
+
+/* Eventos del modal */
+document.getElementById('btn-trigger-error').addEventListener('click', mostrarError);
+
+document.getElementById('btn-fix').addEventListener('click', async () => {
+  if (fixStep >= fixPasos.length) {
+    // Ya terminó — cerrar
+    cerrarModal();
+  } else {
+    await ejecutarSiguientePaso();
+  }
+});
+
+// Cerrar al hacer click fuera del modal
+document.getElementById('error-overlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('error-overlay')) {
+    if (fixStep >= fixPasos.length || fixStep === 0) cerrarModal();
+  }
+});
+
+</script>
+</body>
+</html>
