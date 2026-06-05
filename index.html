@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instituto Tecnológico · Feria de Carreras 2025</title>
+
+  <!-- Fuentes: Syne (display) + JetBrains Mono (código) + Inter Tight (cuerpo) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js para gráficos en Contabilidad -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ═══════════════════════════════════════════════
+       VARIABLES & RESET
+    ═══════════════════════════════════════════════ */
+    :root {
+      --bg-deep:     #080c14;
+      --bg-panel:    #0d1320;
+      --bg-card:     #111927;
+      --bg-hover:    #162030;
+      --border:      #1e2d42;
+      --border-glow: #2a4a6e;
+
+      --txt-primary:  #e8f0fe;
+      --txt-secondary:#8fa8c8;
+      --txt-muted:    #4a6080;
+
+      /* Acentos por carrera */
+      --cyan:   #00e5ff;
+      --green:  #00e676;
+      --amber:  #ffab40;
+      --purple: #ce93d8;
+
+      --accent:  var(--cyan);
+
+      --radius: 10px;
+      --font-display: 'Syne', sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+      --font-body:    'Inter Tight', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-deep);
+      color: var(--txt-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      /* Textura de cuadrícula sutil */
+      background-image:
+        linear-gradient(rgba(0,229,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       LAYOUT PRINCIPAL
+    ═══════════════════════════════════════════════ */
+    #app {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8,12,20,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .9rem 0;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: grid; place-items: center;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: .8rem;
+      color: var(--bg-deep);
+      flex-shrink: 0;
+    }
+    .logo-text { font-family: var(--font-display); font-weight: 800; font-size: 1rem; letter-spacing: -.02em; }
+    .logo-sub  { font-size: .7rem; color: var(--txt-muted); font-family: var(--font-mono); letter-spacing: .08em; }
+
+    /* ── NAV TABS ── */
+    nav.tabs {
+      display: flex;
+      gap: .25rem;
+      padding: .5rem 0;
+      flex-wrap: wrap;
+    }
+
+    nav.tabs button {
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      padding: .45rem .9rem;
+      font-family: var(--font-body);
+      font-size: .78rem;
+      font-weight: 500;
+      color: var(--txt-muted);
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      position: relative;
+      white-space: nowrap;
+    }
+    nav.tabs button .step-num {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--border);
+      display: grid; place-items: center;
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: all .2s;
+    }
+    nav.tabs button:hover        { color: var(--txt-secondary); border-color: var(--border-glow); }
+    nav.tabs button.active       { color: var(--txt-primary); border-color: var(--accent); background: rgba(0,229,255,.06); }
+    nav.tabs button.active .step-num { background: var(--accent); color: var(--bg-deep); }
+    nav.tabs button.done         { color: var(--green); }
+    nav.tabs button.done .step-num { background: var(--green); color: var(--bg-deep); }
+    nav.tabs button.locked       { opacity: .35; cursor: not-allowed; }
+
+    /* ── CONTENIDO PRINCIPAL ── */
+    main { padding: 2rem; max-width: 1200px; width: 100%; margin: 0 auto; }
+
+    /* ── FOOTER / BARRA AVANZAR ── */
+    footer {
+      position: sticky;
+      bottom: 0;
+      background: rgba(8,12,20,.95);
+      border-top: 1px solid var(--border);
+      padding: .8rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .status-bar {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--txt-muted);
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    .btn-next {
+      background: var(--accent);
+      color: var(--bg-deep);
+      border: none;
+      border-radius: var(--radius);
+      padding: .6rem 1.4rem;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: .85rem;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      letter-spacing: .02em;
+    }
+    .btn-next:hover { filter: brightness(1.15); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,229,255,.4); }
+    .btn-next:disabled { opacity: .3; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-next svg { width: 16px; height: 16px; }
+
+    /* ═══════════════════════════════════════════════
+       COMPONENTES COMUNES
+    ═══════════════════════════════════════════════ */
+    .section { display: none; }
+    .section.active { display: block; animation: fadeUp .35s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-icon {
+      width: 52px; height: 52px;
+      border-radius: 12px;
+      display: grid; place-items: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .section-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; }
+    .section-desc  { margin-top: .35rem; color: var(--txt-secondary); font-size: .88rem; line-height: 1.5; }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      transition: border-color .2s;
+    }
+    .card:hover { border-color: var(--border-glow); }
+    .card-label {
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      letter-spacing: .1em;
+      color: var(--txt-muted);
+      text-transform: uppercase;
+      margin-bottom: .5rem;
+    }
+    .card-value {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -.04em;
+      line-height: 1;
+    }
+    .card-sub { font-size: .75rem; color: var(--txt-muted); margin-top: .35rem; }
+
+    /* Grid helpers */
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 1rem; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 1rem; }
+
+    /* Botón de acción primario de cada módulo */
+    .btn-action {
+      border: 2px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      border-radius: var(--radius);
+      padding: .7rem 1.5rem;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: .9rem;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      letter-spacing: .02em;
+      width: fit-content;
+    }
+    .btn-action:hover  { background: var(--accent); color: var(--bg-deep); box-shadow: 0 0 24px rgba(0,229,255,.35); }
+    .btn-action:disabled { opacity: .3; cursor: not-allowed; }
+
+    /* Badge de estado */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .25rem .65rem;
+      border-radius: 20px;
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      font-weight: 500;
+      letter-spacing: .04em;
+    }
+    .badge-cyan   { background: rgba(0,229,255,.1); color: var(--cyan); border: 1px solid rgba(0,229,255,.3); }
+    .badge-green  { background: rgba(0,230,118,.1); color: var(--green); border: 1px solid rgba(0,230,118,.3); }
+    .badge-amber  { background: rgba(255,171,64,.1); color: var(--amber); border: 1px solid rgba(255,171,64,.3); }
+    .badge-purple { background: rgba(206,147,216,.1); color: var(--purple); border: 1px solid rgba(206,147,216,.3); }
+
+    /* Barra de progreso */
+    .progress-wrap { background: var(--border); border-radius: 4px; overflow: hidden; height: 6px; }
+    .progress-bar  { height: 100%; border-radius: 4px; transition: width .4s ease; }
+
+    /* ═══════════════════════════════════════════════
+       MÓDULO 1 — SOFTWARE (cyan)
+    ═══════════════════════════════════════════════ */
+    #sec-software { --accent: var(--cyan); }
+
+    .terminal {
+      background: #06090f;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      font-family: var(--font-mono);
+      font-size: .8rem;
+    }
+    .terminal-titlebar {
+      background: #0d1320;
+      padding: .5rem .9rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .terminal-dot { width:10px;height:10px;border-radius:50%; }
+    .terminal-body {
+      padding: 1rem;
+      max-height: 260px;
+      overflow-y: auto;
+      line-height: 1.8;
+    }
+    .terminal-body::-webkit-scrollbar { width: 4px; }
+    .terminal-body::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 2px; }
+
+    .t-line { display: flex; gap: .5rem; }
+    .t-prompt { color: var(--cyan); flex-shrink: 0; }
+    .t-cmd    { color: var(--txt-primary); }
+    .t-out    { color: var(--txt-secondary); padding-left: 1.2rem; }
+    .t-ok     { color: var(--green); }
+    .t-warn   { color: var(--amber); }
+    .t-cursor { display: inline-block; width: 8px; height: 14px; background: var(--cyan); animation: blink .7s step-end infinite; vertical-align: text-bottom; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .deploy-status {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+    .deploy-steps { list-style: none; margin-top: .75rem; display: flex; flex-direction: column; gap: .4rem; }
+    .deploy-step  { display: flex; align-items: center; gap: .6rem; font-size: .8rem; color: var(--txt-muted); }
+    .deploy-step.done    { color: var(--green); }
+    .deploy-step.running { color: var(--cyan); }
+    .deploy-step .ic { width: 16px; text-align: center; flex-shrink: 0; }
+
+    /* ═══════════════════════════════════════════════
+       MÓDULO 2 — VENTAS (green)
+    ═══════════════════════════════════════════════ */
+    #sec-ventas { --accent: var(--green); }
+
+    .metric-big .card-value { color: var(--green); }
+
+    .campaign-log {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .75rem 1rem;
+      max-height: 180px;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: .75rem;
+    }
+    .campaign-log::-webkit-scrollbar { width: 4px; }
+    .campaign-log::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 2px; }
+    .log-entry { padding: .25rem 0; border-bottom: 1px solid var(--border); color: var(--txt-secondary); }
+    .log-entry:last-child { border-bottom: none; }
+    .log-entry .ts { color: var(--txt-muted); margin-right: .5rem; }
+    .log-entry .ev { color: var(--green); }
+    .log-entry.warn .ev { color: var(--amber); }
+
+    /* Mini sparkline visual */
+    .sparkline-wrap { position: relative; height: 60px; overflow: hidden; margin-top: .5rem; }
+    .sparkline-bar {
+      position: absolute;
+      bottom: 0;
+      width: 6px;
+      border-radius: 3px 3px 0 0;
+      background: var(--green);
+      opacity: .6;
+      transition: height .3s;
+    }
+
+    /* ═══════════════════════════════════════════════
+       MÓDULO 3 — ADMINISTRACIÓN (amber)
+    ═══════════════════════════════════════════════ */
+    #sec-admin { --accent: var(--amber); }
+
+    .inventory-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .82rem;
+    }
+    .inventory-table th {
+      background: var(--bg-panel);
+      padding: .6rem .9rem;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      letter-spacing: .08em;
+      color: var(--txt-muted);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    .inventory-table td {
+      padding: .65rem .9rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .inventory-table tr:last-child td { border-bottom: none; }
+    .inventory-table tr:hover td { background: var(--bg-hover); }
+    .stock-bar-wrap { width: 90px; }
+
+    .alert-box {
+      background: rgba(255,171,64,.07);
+      border: 1px solid rgba(255,171,64,.3);
+      border-radius: var(--radius);
+      padding: .75rem 1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: .6rem;
+      font-size: .82rem;
+      color: var(--amber);
+      animation: slideIn .3s ease;
+    }
+    @keyframes slideIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:none} }
+
+    .personnel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); gap: .75rem; }
+    .person-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .75rem;
+      text-align: center;
+      font-size: .75rem;
+      transition: border-color .2s;
+    }
+    .person-card:hover { border-color: rgba(255,171,64,.4); }
+    .person-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      margin: 0 auto .4rem;
+      display: grid; place-items: center;
+      font-size: 1rem;
+      background: var(--bg-panel);
+      border: 2px solid var(--border);
+    }
+    .person-card.busy .person-avatar { border-color: var(--amber); }
+    .person-name { color: var(--txt-primary); font-weight: 500; }
+    .person-role { color: var(--txt-muted); margin-top: .1rem; }
+
+    /* ═══════════════════════════════════════════════
+       MÓDULO 4 — CONTABILIDAD (purple)
+    ═══════════════════════════════════════════════ */
+    #sec-conta { --accent: var(--purple); }
+
+    .account-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .6rem .9rem;
+      border-bottom: 1px solid var(--border);
+      font-size: .85rem;
+      transition: background .15s;
+    }
+    .account-row:hover { background: var(--bg-hover); }
+    .account-row:last-child { border-bottom: none; }
+    .account-row .label { color: var(--txt-secondary); }
+    .account-row .amount { font-family: var(--font-mono); font-weight: 600; }
+    .account-row.total  { background: var(--bg-panel); }
+    .account-row.total .label { color: var(--txt-primary); font-weight: 600; }
+
+    .chart-container { position: relative; height: 260px; }
+
+    /* Número animado */
+    .animated-number { transition: all .3s; }
+
+    /* ═══════════════════════════════════════════════
+       UTILIDADES
+    ═══════════════════════════════════════════════ */
+    .flex         { display: flex; }
+    .items-center { align-items: center; }
+    .gap-sm       { gap: .5rem; }
+    .gap-md       { gap: 1rem; }
+    .mt-xs        { margin-top: .4rem; }
+    .mt-sm        { margin-top: .75rem; }
+    .mt-md        { margin-top: 1.25rem; }
+    .mt-lg        { margin-top: 2rem; }
+    .mb-sm        { margin-bottom: .75rem; }
+    .mb-md        { margin-bottom: 1.25rem; }
+    .text-mono    { font-family: var(--font-mono); }
+    .text-muted   { color: var(--txt-muted); }
+    .text-sm      { font-size: .82rem; }
+    .text-xs      { font-size: .72rem; }
+    .font-bold    { font-weight: 700; }
+    .w-full       { width: 100%; }
+    .hidden       { display: none !important; }
+
+    /* Separador visual de sección */
+    .section-divider {
+      display: flex; align-items: center; gap: .75rem;
+      margin: 1.5rem 0 1rem;
+    }
+    .section-divider span {
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--txt-muted);
+      white-space: nowrap;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Toast de notificación */
+    #toast-container {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      padding: .7rem 1rem;
+      font-size: .8rem;
+      max-width: 280px;
+      animation: toastIn .3s ease, toastOut .3s ease 2.5s forwards;
+    }
+    @keyframes toastIn  { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:none} }
+    @keyframes toastOut { from{opacity:1} to{opacity:0;transform:translateX(20px)} }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      main { padding: 1rem; }
+      header { padding: 0 1rem; }
+      footer { padding: .7rem 1rem; }
+      .section-title { font-size: 1.25rem; }
+      nav.tabs button { padding: .4rem .6rem; font-size: .72rem; }
+    }
+  </style>
+</head>
+
+<body>
+<div id="app">
+
+  <!-- ══════════════ HEADER ══════════════ -->
+  <header>
+    <div class="logo-area">
+      <div class="logo-icon">IT</div>
+      <div>
+        <div class="logo-text">Instituto Tecnológico</div>
+        <div class="logo-sub">FERIA DE CARRERAS · 2025</div>
+      </div>
+    </div>
+
+    <!-- Tabs de navegación -->
+    <nav class="tabs" id="main-nav" role="tablist" aria-label="Módulos de carrera">
+      <button class="active" data-tab="software" role="tab">
+        <span class="step-num">1</span> Desarrollo de Software
+      </button>
+      <button class="locked" data-tab="ventas" role="tab">
+        <span class="step-num">2</span> Ventas
+      </button>
+      <button class="locked" data-tab="admin" role="tab">
+        <span class="step-num">3</span> Administración
+      </button>
+      <button class="locked" data-tab="conta" role="tab">
+        <span class="step-num">4</span> Contabilidad
+      </button>
+    </nav>
+  </header>
+
+  <!-- ══════════════ CONTENIDO ══════════════ -->
+  <main>
+
+    <!-- ─────────────────────────────────────
+         MÓDULO 1: DESARROLLO DE SOFTWARE
+    ───────────────────────────────────── -->
+    <section id="sec-software" class="section active" role="tabpanel" aria-label="Desarrollo de Software">
+
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(0,229,255,.12); color:var(--cyan);">💻</div>
+        <div>
+          <div class="section-title" style="color:var(--cyan)">Desarrollo de Software</div>
+          <p class="section-desc">
+            Los desarrolladores construyen y despliegan la plataforma de ventas en la nube.
+            Sin software, el negocio no puede operar. ¡Despliega la aplicación para arrancar!
+          </p>
+        </div>
+      </div>
+
+      <!-- Panel de métricas de sistema -->
+      <div class="grid-3 mb-md">
+        <div class="card">
+          <div class="card-label">// Estado del Sistema</div>
+          <div class="card-value" style="font-size:1.1rem" id="sys-status-text">OFFLINE</div>
+          <div class="mt-xs"><span id="sys-status-badge" class="badge badge-amber">● DETENIDO</span></div>
+        </div>
+        <div class="card">
+          <div class="card-label">// Versión App</div>
+          <div class="card-value" style="font-size:1.4rem; font-family:var(--font-mono)">v2.4.1</div>
+          <div class="card-sub">release/produccion</div>
+        </div>
+        <div class="card">
+          <div class="card-label">// Módulos</div>
+          <div class="card-value" id="modules-ok" style="font-size:1.4rem">0<span style="font-size:.9rem;color:var(--txt-muted)">/7</span></div>
+          <div class="mt-xs progress-wrap"><div id="modules-bar" class="progress-bar" style="width:0%;background:var(--cyan)"></div></div>
+        </div>
+      </div>
+
+      <!-- Terminal -->
+      <div class="section-divider"><span>// consola de sistema</span></div>
+      <div class="terminal">
+        <div class="terminal-titlebar">
+          <div class="terminal-dot" style="background:#ff5f56"></div>
+          <div class="terminal-dot" style="background:#febc2e"></div>
+          <div class="terminal-dot" style="background:#28c840"></div>
+          <span style="margin-left:.5rem; font-size:.7rem; color:var(--txt-muted)">
+            user@devserver: ~/proyecto-comercial
+          </span>
+        </div>
+        <div class="terminal-body" id="terminal-body">
+          <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">git clone https://repo.instituto.com/app-comercial.git</span></div>
+          <div class="t-line t-out">Clonando en 'app-comercial'...</div>
+          <div class="t-line t-out">remote: Enumerando objetos: 1248</div>
+          <div class="t-line t-ok">✓ Repositorio clonado exitosamente</div>
+          <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">npm install --production</span></div>
+          <div class="t-line t-out">added 342 packages in 4.2s</div>
+          <div class="t-line t-ok">✓ Dependencias instaladas</div>
+          <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">npm run build</span></div>
+          <div class="t-line t-ok">✓ Build completado → dist/</div>
+          <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">_<span class="t-cursor"></span></span></div>
+        </div>
+      </div>
+
+      <!-- Panel de despliegue -->
+      <div class="deploy-status mt-md" id="deploy-panel">
+        <div class="flex items-center gap-sm mb-sm">
+          <span style="font-family:var(--font-mono);font-size:.75rem;color:var(--txt-secondary)">PIPELINE DE DESPLIEGUE</span>
+          <span id="deploy-badge" class="badge badge-amber">EN ESPERA</span>
+        </div>
+        <ul class="deploy-steps" id="deploy-steps">
+          <li class="deploy-step" id="ds-1"><span class="ic">○</span>Validar variables de entorno</li>
+          <li class="deploy-step" id="ds-2"><span class="ic">○</span>Compilar contenedores Docker</li>
+          <li class="deploy-step" id="ds-3"><span class="ic">○</span>Ejecutar tests de integración</li>
+          <li class="deploy-step" id="ds-4"><span class="ic">○</span>Subir imagen a registro</li>
+          <li class="deploy-step" id="ds-5"><span class="ic">○</span>Actualizar cluster en producción</li>
+          <li class="deploy-step" id="ds-6"><span class="ic">○</span>Reiniciar balanceador de carga</li>
+          <li class="deploy-step" id="ds-7"><span class="ic">○</span>Verificar health checks</li>
+        </ul>
+      </div>
+
+      <!-- Botón acción -->
+      <div class="mt-md flex items-center gap-md" style="flex-wrap:wrap">
+        <button class="btn-action" id="btn-deploy" onclick="iniciarDespliegue()">
+          <span>🚀</span> Desplegar Aplicación
+        </button>
+        <span id="deploy-msg" class="text-muted text-sm hidden"></span>
+      </div>
+
+    </section>
+
+    <!-- ─────────────────────────────────────
+         MÓDULO 2: VENTAS
+    ───────────────────────────────────── -->
+    <section id="sec-ventas" class="section" role="tabpanel" aria-label="Ventas">
+
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(0,230,118,.12); color:var(--green);">📈</div>
+        <div>
+          <div class="section-title" style="color:var(--green)">Ventas</div>
+          <p class="section-desc">
+            Con la plataforma operativa, el equipo comercial lanza campañas para captar clientes.
+            Cada venta genera ingresos que fluyen al área contable.
+          </p>
+        </div>
+      </div>
+
+      <!-- KPIs principales -->
+      <div class="grid-3 mb-md">
+        <div class="card metric-big">
+          <div class="card-label">💰 Ingresos Totales</div>
+          <div class="card-value" style="color:var(--green)">$<span id="v-ingresos" class="animated-number">0</span></div>
+          <div class="card-sub">USD acumulados</div>
+        </div>
+        <div class="card">
+          <div class="card-label">🛒 Ventas Realizadas</div>
+          <div class="card-value" style="color:var(--txt-primary)"><span id="v-ventas" class="animated-number">0</span></div>
+          <div class="card-sub">transacciones</div>
+        </div>
+        <div class="card">
+          <div class="card-label">👥 Clientes Nuevos</div>
+          <div class="card-value" style="color:var(--txt-primary)"><span id="v-clientes" class="animated-number">0</span></div>
+          <div class="mt-xs progress-wrap">
+            <div id="v-conversion-bar" class="progress-bar" style="width:0%;background:var(--green)"></div>
+          </div>
+          <div class="card-sub"><span id="v-conversion">0</span>% conversión</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Log de campaña -->
+        <div>
+          <div class="section-divider"><span>// actividad de campaña</span></div>
+          <div class="campaign-log" id="campaign-log">
+            <div class="log-entry"><span class="ts">[sistema]</span><span class="ev">Listo para lanzar campaña...</span></div>
+          </div>
+          <!-- Mini gráfico de barras simulado -->
+          <div class="card mt-sm">
+            <div class="card-label">// Ventas por Hora (últimas 8h)</div>
+            <div class="sparkline-wrap" id="sparkline">
+              <!-- Las barras se generan via JS -->
+            </div>
+          </div>
+        </div>
+        <!-- Canales de venta -->
+        <div>
+          <div class="section-divider"><span>// canales de venta</span></div>
+          <div class="card w-full" style="padding:0;overflow:hidden">
+            <div id="channels-list">
+              <!-- Generado por JS -->
+            </div>
+          </div>
+          <div class="mt-sm flex items-center gap-sm" style="flex-wrap:wrap">
+            <button class="btn-action" id="btn-campaign" onclick="lanzarCampana()" style="--accent:var(--green)">
+              <span>📣</span> Lanzar Campaña de Marketing
+            </button>
+            <span id="campaign-msg" class="text-muted text-sm hidden"></span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ─────────────────────────────────────
+         MÓDULO 3: ADMINISTRACIÓN
+    ───────────────────────────────────── -->
+    <section id="sec-admin" class="section" role="tabpanel" aria-label="Administración">
+
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(255,171,64,.12); color:var(--amber);">📦</div>
+        <div>
+          <div class="section-title" style="color:var(--amber)">Administración</div>
+          <p class="section-desc">
+            Administración gestiona el inventario y coordina la logística de entrega.
+            Las ventas generan pedidos que deben ser procesados y despachados.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Inventario -->
+        <div>
+          <div class="section-divider"><span>// estado del inventario</span></div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Stock</th>
+                  <th>Estado</th>
+                  <th>Nivel</th>
+                </tr>
+              </thead>
+              <tbody id="inventory-tbody">
+                <!-- JS lo llena -->
+              </tbody>
+            </table>
+          </div>
+          <!-- Alertas logísticas -->
+          <div id="alerts-container" class="mt-sm" style="display:flex;flex-direction:column;gap:.5rem"></div>
+        </div>
+
+        <!-- Personal y métricas -->
+        <div>
+          <div class="section-divider"><span>// métricas operativas</span></div>
+          <div class="grid-3" style="grid-template-columns:1fr 1fr">
+            <div class="card">
+              <div class="card-label">Pedidos Procesados</div>
+              <div class="card-value" style="color:var(--amber)"><span id="a-pedidos">0</span></div>
+            </div>
+            <div class="card">
+              <div class="card-label">Costo Logístico</div>
+              <div class="card-value" style="font-size:1.3rem">$<span id="a-costo">0</span></div>
+            </div>
+          </div>
+          <div class="section-divider mt-md"><span>// personal activo</span></div>
+          <div class="personnel-grid" id="personnel-grid">
+            <!-- JS lo llena -->
+          </div>
+          <div class="mt-md">
+            <button class="btn-action" id="btn-pedidos" onclick="procesarPedidos()" style="--accent:var(--amber)">
+              <span>⚡</span> Procesar Pedidos de Clientes
+            </button>
+            <div id="pedidos-msg" class="text-muted text-sm mt-xs hidden"></div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ─────────────────────────────────────
+         MÓDULO 4: CONTABILIDAD
+    ───────────────────────────────────── -->
+    <section id="sec-conta" class="section" role="tabpanel" aria-label="Contabilidad">
+
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(206,147,216,.12); color:var(--purple);">📊</div>
+        <div>
+          <div class="section-title" style="color:var(--purple)">Contabilidad</div>
+          <p class="section-desc">
+            Contabilidad consolida los números de toda la empresa: ingresos de Ventas,
+            costos de Administración y calcula la utilidad neta del período.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Estado de Resultados -->
+        <div>
+          <div class="section-divider"><span>// estado de resultados</span></div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <!-- Ingresos -->
+            <div class="account-row">
+              <span class="label">📈 Ingresos por Ventas</span>
+              <span class="amount" style="color:var(--green)" id="c-ingresos">$0</span>
+            </div>
+            <div class="account-row">
+              <span class="label" style="padding-left:1rem">· Ventas directas</span>
+              <span class="amount text-muted text-sm" id="c-v-directas">$0</span>
+            </div>
+            <div class="account-row">
+              <span class="label" style="padding-left:1rem">· Comisiones online</span>
+              <span class="amount text-muted text-sm" id="c-v-online">$0</span>
+            </div>
+            <!-- Costos -->
+            <div class="account-row" style="margin-top:.3rem">
+              <span class="label">📦 Costos Operativos</span>
+              <span class="amount" style="color:var(--amber)" id="c-costos">$0</span>
+            </div>
+            <div class="account-row">
+              <span class="label" style="padding-left:1rem">· Logística</span>
+              <span class="amount text-muted text-sm" id="c-c-logistica">$0</span>
+            </div>
+            <div class="account-row">
+              <span class="label" style="padding-left:1rem">· Infraestructura IT</span>
+              <span class="amount text-muted text-sm">$1,200</span>
+            </div>
+            <div class="account-row">
+              <span class="label" style="padding-left:1rem">· Nómina</span>
+              <span class="amount text-muted text-sm">$8,500</span>
+            </div>
+            <!-- Utilidad -->
+            <div class="account-row total" style="border-top:2px solid var(--border)">
+              <span class="label">⭐ UTILIDAD NETA</span>
+              <span class="amount" style="font-size:1.1rem" id="c-utilidad">$0</span>
+            </div>
+          </div>
+
+          <div class="mt-md">
+            <button class="btn-action" id="btn-cierre" onclick="generarCierre()" style="--accent:var(--purple)">
+              <span>📋</span> Generar Cierre Financiero
+            </button>
+            <div id="cierre-msg" class="text-muted text-sm mt-xs hidden"></div>
+          </div>
+        </div>
+
+        <!-- Gráfico dinámico -->
+        <div>
+          <div class="section-divider"><span>// análisis financiero</span></div>
+          <div class="card">
+            <div class="card-label">// Distribución de Resultados</div>
+            <div class="chart-container mt-sm">
+              <canvas id="financial-chart"></canvas>
+            </div>
+          </div>
+          <div class="grid-3 mt-sm" style="grid-template-columns:1fr 1fr">
+            <div class="card">
+              <div class="card-label">Margen Bruto</div>
+              <div class="card-value" style="color:var(--purple); font-size:1.4rem"><span id="c-margen">0</span>%</div>
+            </div>
+            <div class="card">
+              <div class="card-label">ROI Campaña</div>
+              <div class="card-value" style="font-size:1.4rem"><span id="c-roi">0</span>x</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ══════════════ FOOTER / BARRA DE ESTADO ══════════════ -->
+  <footer>
+    <div class="status-bar">
+      <div class="status-dot" id="global-dot"></div>
+      <span id="global-status">Sistema detenido — Módulo 1: Desarrollo de Software</span>
+    </div>
+    <button class="btn-next" id="btn-siguiente" onclick="siguienteModulo()" disabled>
+      Siguiente Módulo
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  </footer>
+
+</div><!-- #app -->
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT — LÓGICA DE LA APLICACIÓN
+══════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════
+   ESTADO GLOBAL — todos los datos de la simulación
+═══════════════════════════════════════════════ */
+const ESTADO = {
+  moduloActual: 0,           // índice (0-3)
+  modulosDesbloqueados: [true, false, false, false],
+  modulosCompletados:   [false, false, false, false],
+
+  // Datos que fluyen entre módulos
+  ventas: {
+    ingresos:  0,
+    numVentas: 0,
+    clientes:  0,
+    lanzada:   false,
+  },
+  admin: {
+    pedidosProcesados: 0,
+    costoLogistico:    0,
+    procesado:         false,
+  },
+  conta: {
+    cierreGenerado: false,
+  },
+
+  // Inventario inicial
+  inventario: [
+    { id: 1, nombre: 'Laptop Pro X',   stock: 48, max: 48, unidad: 'und' },
+    { id: 2, nombre: 'Monitor 27"',    stock: 30, max: 30, unidad: 'und' },
+    { id: 3, nombre: 'Software Suite', stock: 200, max: 200, unidad: 'lic' },
+    { id: 4, nombre: 'Soporte Técnico',stock: 100, max: 100, unidad: 'hrs' },
+  ],
+};
+
+const TABS = ['software', 'ventas', 'admin', 'conta'];
+const LABELS = ['Desarrollo de Software', 'Ventas', 'Administración', 'Contabilidad'];
+
+let chartFinanciero = null; // instancia de Chart.js
+
+/* ═══════════════════════════════════════════════
+   NAVEGACIÓN
+═══════════════════════════════════════════════ */
+
+/**
+ * Navega a una pestaña específica.
+ * @param {string} tab - clave del tab (software|ventas|admin|conta)
+ */
+function navegarA(tab) {
+  const idx = TABS.indexOf(tab);
+  if (idx === -1 || !ESTADO.modulosDesbloqueados[idx]) return;
+
+  ESTADO.moduloActual = idx;
+
+  // Actualizar secciones visibles
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`sec-${tab}`).classList.add('active');
+
+  // Actualizar estado de tabs en nav
+  document.querySelectorAll('#main-nav button').forEach((btn, i) => {
+    btn.classList.remove('active', 'done', 'locked');
+    if (i === idx)       btn.classList.add('active');
+    else if (ESTADO.modulosCompletados[i]) btn.classList.add('done');
+    else if (!ESTADO.modulosDesbloqueados[i]) btn.classList.add('locked');
+  });
+
+  // Actualizar botón siguiente
+  actualizarBtnSiguiente();
+
+  // Actualizar status bar
+  document.getElementById('global-status').textContent =
+    `Módulo ${idx + 1} activo — ${LABELS[idx]}`;
+
+  // Acciones específicas al entrar a un módulo
+  if (tab === 'ventas') inicializarVentas();
+  if (tab === 'admin')  inicializarAdmin();
+  if (tab === 'conta')  inicializarContabilidad();
+}
+
+/** Avanza al siguiente módulo (botón footer) */
+function siguienteModulo() {
+  const siguiente = ESTADO.moduloActual + 1;
+  if (siguiente < TABS.length && ESTADO.modulosDesbloqueados[siguiente]) {
+    navegarA(TABS[siguiente]);
+  }
+}
+
+/** Actualiza el botón de siguiente módulo */
+function actualizarBtnSiguiente() {
+  const btn = document.getElementById('btn-siguiente');
+  const idx = ESTADO.moduloActual;
+  const hayNext = idx < TABS.length - 1;
+  const nextDesbloqueado = hayNext && ESTADO.modulosDesbloqueados[idx + 1];
+  btn.disabled = !nextDesbloqueado;
+
+  if (!hayNext) {
+    btn.textContent = '✓ Simulación Completa';
+    btn.innerHTML = '✓ Simulación Completa';
+  } else {
+    btn.innerHTML = `Siguiente Módulo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+  }
+}
+
+/** Desbloquea un módulo y muestra toast */
+function desbloquearModulo(idx) {
+  ESTADO.modulosDesbloqueados[idx] = true;
+  const navBtns = document.querySelectorAll('#main-nav button');
+  navBtns[idx].classList.remove('locked');
+  mostrarToast(`🔓 Módulo ${idx + 1}: "${LABELS[idx]}" desbloqueado`, 'green');
+  actualizarBtnSiguiente();
+}
+
+/** Marca un módulo como completado */
+function completarModulo(idx) {
+  ESTADO.modulosCompletados[idx] = true;
+  // desbloquear siguiente si existe
+  if (idx + 1 < TABS.length) desbloquearModulo(idx + 1);
+  actualizarBtnSiguiente();
+}
+
+
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+function mostrarToast(mensaje, color = 'cyan') {
+  const container = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  const colorMap = { cyan: 'var(--cyan)', green: 'var(--green)', amber: 'var(--amber)', purple: 'var(--purple)' };
+  t.className = 'toast';
+  t.style.borderLeftColor = colorMap[color] || 'var(--cyan)';
+  t.textContent = mensaje;
+  container.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+
+/* ═══════════════════════════════════════════════
+   MÓDULO 1: DESARROLLO DE SOFTWARE
+═══════════════════════════════════════════════ */
+let deployEnCurso = false;
+
+function iniciarDespliegue() {
+  if (deployEnCurso || ESTADO.modulosCompletados[0]) return;
+  deployEnCurso = true;
+
+  const btn = document.getElementById('btn-deploy');
+  const msg = document.getElementById('deploy-msg');
+  const badge = document.getElementById('deploy-badge');
+  btn.disabled = true;
+  badge.className = 'badge badge-cyan';
+  badge.textContent = 'EN PROCESO...';
+  msg.classList.remove('hidden');
+  msg.textContent = 'Iniciando pipeline de CI/CD...';
+
+  const steps = [
+    { id: 'ds-1', icono: '✓', delay: 600,  msg: 'Vars de entorno verificadas' },
+    { id: 'ds-2', icono: '✓', delay: 1200, msg: 'Docker build completado' },
+    { id: 'ds-3', icono: '✓', delay: 2000, msg: 'Tests pasaron: 142/142 ✓' },
+    { id: 'ds-4', icono: '✓', delay: 2700, msg: 'Imagen subida al registro' },
+    { id: 'ds-5', icono: '✓', delay: 3400, msg: 'Cluster k8s actualizado' },
+    { id: 'ds-6', icono: '✓', delay: 4000, msg: 'Load balancer reiniciado' },
+    { id: 'ds-7', icono: '✓', delay: 4800, msg: 'Health checks OK (200 OK)' },
+  ];
+
+  // Animación de módulos
+  let modCount = 0;
+  const modBar = document.getElementById('modules-bar');
+  const modNum = document.getElementById('modules-ok');
+
+  steps.forEach((step, i) => {
+    // Marcar running
+    setTimeout(() => {
+      const el = document.getElementById(step.id);
+      el.classList.add('running');
+      el.querySelector('.ic').textContent = '◌';
+    }, step.delay - 400);
+
+    // Marcar done
+    setTimeout(() => {
+      const el = document.getElementById(step.id);
+      el.classList.remove('running');
+      el.classList.add('done');
+      el.querySelector('.ic').textContent = step.icono;
+
+      // Actualizar barra de módulos
+      modCount++;
+      modNum.innerHTML = `${modCount}<span style="font-size:.9rem;color:var(--txt-muted)">/7</span>`;
+      modBar.style.width = `${(modCount / 7) * 100}%`;
+
+      // Agregar línea al terminal
+      agregarLineaTerminal(step.msg, 'ok');
+
+    }, step.delay);
+  });
+
+  // Finalizar despliegue
+  setTimeout(() => {
+    badge.className = 'badge badge-green';
+    badge.textContent = '● ONLINE';
+
+    const sysText  = document.getElementById('sys-status-text');
+    const sysBadge = document.getElementById('sys-status-badge');
+    sysText.textContent = 'ONLINE';
+    sysBadge.className  = 'badge badge-green';
+    sysBadge.textContent = '● ACTIVO';
+
+    agregarLineaTerminal('Sistema desplegado en producción. URL: https://app.comercial.com', 'ok');
+    agregarLineaTerminal('INFO: 3 instancias activas. Uptime: 100%', 'out');
+    msg.textContent = '✓ ¡Sistema Online! La plataforma está operativa.';
+    msg.style.color = 'var(--green)';
+
+    mostrarToast('🚀 Aplicación desplegada exitosamente', 'cyan');
+    completarModulo(0);
+    deployEnCurso = false;
+  }, 5500);
+}
+
+/** Agrega una línea al terminal con delay visual */
+function agregarLineaTerminal(texto, tipo = 'out') {
+  const body = document.getElementById('terminal-body');
+  const claseMap = { ok: 't-ok', out: 't-out', warn: 't-warn' };
+  const linea = document.createElement('div');
+  linea.className = `t-line ${claseMap[tipo] || 't-out'}`;
+  // Si es ok, con prefijo de prompt
+  if (tipo === 'ok') {
+    linea.innerHTML = `<span class="t-prompt">✓</span><span class="t-cmd">${texto}</span>`;
+  } else {
+    linea.innerHTML = `&nbsp;&nbsp;${texto}`;
+  }
+  // Insertar antes del cursor
+  const cursor = body.querySelector('.t-cursor');
+  if (cursor) cursor.closest('.t-line').before(linea);
+  else body.appendChild(linea);
+  body.scrollTop = body.scrollHeight;
+}
+
+
+/* ═══════════════════════════════════════════════
+   MÓDULO 2: VENTAS
+═══════════════════════════════════════════════ */
+let campanaEnCurso = false;
+let campaignInterval = null;
+
+const CANALES = [
+  { nombre: 'Tienda Online', icono: '🌐', porcentaje: 45 },
+  { nombre: 'Vendedores',    icono: '🤝', porcentaje: 30 },
+  { nombre: 'Redes Sociales',icono: '📱', porcentaje: 15 },
+  { nombre: 'Email Mktg',    icono: '📧', porcentaje: 10 },
+];
+
+function inicializarVentas() {
+  // Renderizar canales si no están
+  const channelsList = document.getElementById('channels-list');
+  if (!channelsList.dataset.init) {
+    channelsList.dataset.init = '1';
+    channelsList.innerHTML = CANALES.map(c => `
+      <div class="account-row">
+        <span class="label">${c.icono} ${c.nombre}</span>
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <div class="progress-wrap" style="width:80px">
+            <div class="progress-bar" style="width:${c.porcentaje}%;background:var(--green)"></div>
+          </div>
+          <span class="text-mono text-xs" style="color:var(--green)">${c.porcentaje}%</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Sparkline inicial
+  inicializarSparkline();
+  actualizarMetricasVentas();
+}
+
+function inicializarSparkline() {
+  const wrap = document.getElementById('sparkline');
+  if (wrap.dataset.init) return;
+  wrap.dataset.init = '1';
+  const baseValues = [12, 18, 9, 25, 14, 20, 16, 0]; // valores % de altura
+  const colors = ['rgba(0,230,118,.4)','rgba(0,230,118,.45)','rgba(0,230,118,.4)','rgba(0,230,118,.5)',
+                  'rgba(0,230,118,.45)','rgba(0,230,118,.5)','rgba(0,230,118,.45)','rgba(0,230,118,.6)'];
+  baseValues.forEach((v, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'sparkline-bar';
+    bar.id = `spark-${i}`;
+    bar.style.left = `${i * 13}%`;
+    bar.style.height = `${Math.max(v * 2, 4)}px`;
+    bar.style.background = colors[i];
+    wrap.appendChild(bar);
+  });
+}
+
+function lanzarCampana() {
+  if (campanaEnCurso || ESTADO.ventas.lanzada) return;
+  campanaEnCurso = true;
+
+  const btn   = document.getElementById('btn-campaign');
+  const msg   = document.getElementById('campaign-msg');
+  btn.disabled = true;
+  msg.classList.remove('hidden');
+  msg.textContent = 'Procesando campaña...';
+
+  agregarLog('INICIO', 'Campaña de marketing iniciada', 'ev');
+  agregarLog('INFO',   'Segmentando audiencia objetivo...', 'ev');
+
+  // Objetivos finales de la campaña
+  const ingresosObjetivo = 24750;
+  const ventasObjetivo   = 83;
+  const clientesObjetivo = 156;
+
+  let tick = 0;
+  const totalTicks = 60; // ~6 segundos
+
+  campaignInterval = setInterval(() => {
+    tick++;
+    const progreso = tick / totalTicks;
+    const easing   = 1 - Math.pow(1 - progreso, 3); // ease out cubic
+
+    ESTADO.ventas.ingresos  = Math.floor(ingresosObjetivo * easing);
+    ESTADO.ventas.numVentas = Math.floor(ventasObjetivo   * easing);
+    ESTADO.ventas.clientes  = Math.floor(clientesObjetivo * easing);
+
+    actualizarMetricasVentas();
+
+    // Log eventos aleatorios
+    if (tick === 10) agregarLog('VENTA', 'Lote #001: 12 unidades vendidas vía online', 'ev');
+    if (tick === 20) agregarLog('VENTA', 'Vendedor A cerró 5 contratos corporativos', 'ev');
+    if (tick === 30) agregarLog('INFO',  'Pico de tráfico: +340% vs. línea base', 'ev');
+    if (tick === 40) agregarLog('VENTA', 'Flash sale activada: conversión al 42%', 'ev');
+    if (tick === 50) agregarLog('VENTA', 'Canales sociales generaron 38 leads', 'ev');
+
+    // Animar sparkline
+    animarSparkline(easing);
+
+    if (tick >= totalTicks) {
+      clearInterval(campaignInterval);
+      ESTADO.ventas.ingresos  = ingresosObjetivo;
+      ESTADO.ventas.numVentas = ventasObjetivo;
+      ESTADO.ventas.clientes  = clientesObjetivo;
+      ESTADO.ventas.lanzada   = true;
+      actualizarMetricasVentas();
+      agregarLog('OK', `Campaña completada. Total: $${ingresosObjetivo.toLocaleString()}`, 'ev');
+      msg.textContent = `✓ Campaña exitosa. $${ingresosObjetivo.toLocaleString()} en ingresos.`;
+      msg.style.color = 'var(--green)';
+      mostrarToast(`💰 Campaña cerrada: $${ingresosObjetivo.toLocaleString()} en ingresos`, 'green');
+      completarModulo(1);
+      campanaEnCurso = false;
+    }
+  }, 100);
+}
+
+function actualizarMetricasVentas() {
+  document.getElementById('v-ingresos').textContent = ESTADO.ventas.ingresos.toLocaleString();
+  document.getElementById('v-ventas').textContent   = ESTADO.ventas.numVentas.toLocaleString();
+  document.getElementById('v-clientes').textContent = ESTADO.ventas.clientes.toLocaleString();
+  const conv = ESTADO.ventas.clientes > 0
+    ? Math.round((ESTADO.ventas.numVentas / ESTADO.ventas.clientes) * 100) : 0;
+  document.getElementById('v-conversion').textContent = conv;
+  document.getElementById('v-conversion-bar').style.width = `${Math.min(conv, 100)}%`;
+}
+
+function agregarLog(tipo, mensaje, clase = 'ev') {
+  const log   = document.getElementById('campaign-log');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  const hora  = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  entry.innerHTML = `<span class="ts">[${hora}]</span><span class="${clase}">[${tipo}]</span> ${mensaje}`;
+  log.appendChild(entry);
+  log.scrollTop = log.scrollHeight;
+}
+
+function animarSparkline(progreso) {
+  // Actualizar última barra (hora actual) con progreso
+  const lastBar = document.getElementById('spark-7');
+  if (lastBar) lastBar.style.height = `${Math.floor(progreso * 50 + 4)}px`;
+}
+
+
+/* ═══════════════════════════════════════════════
+   MÓDULO 3: ADMINISTRACIÓN
+═══════════════════════════════════════════════ */
+let pedidosEnCurso = false;
+
+const PERSONAL = [
+  { nombre: 'Ana G.',  rol: 'Logística',  emo: '👩‍💼' },
+  { nombre: 'Carlos M.', rol: 'Almacén',  emo: '👨‍🔧' },
+  { nombre: 'Laura P.',  rol: 'RRHH',     emo: '👩‍💻' },
+  { nombre: 'Diego S.',  rol: 'Compras',  emo: '🧑‍💼' },
+  { nombre: 'María R.',  rol: 'Despacho', emo: '👩‍🏭' },
+  { nombre: 'Pedro A.',  rol: 'Control',  emo: '🧑‍🔬' },
+];
+
+function inicializarAdmin() {
+  renderizarInventario();
+  renderizarPersonal();
+}
+
+function renderizarInventario() {
+  const tbody = document.getElementById('inventory-tbody');
+  tbody.innerHTML = ESTADO.inventario.map(item => {
+    const pct     = Math.round((item.stock / item.max) * 100);
+    const color   = pct > 60 ? 'var(--green)' : pct > 30 ? 'var(--amber)' : '#ff5252';
+    const estado  = pct > 60 ? 'Normal' : pct > 30 ? 'Bajo' : 'Crítico';
+    const badgeClass = pct > 60 ? 'badge-green' : pct > 30 ? 'badge-amber' : 'badge-amber';
+    return `
+      <tr>
+        <td style="font-weight:500">${item.nombre}</td>
+        <td class="text-mono">${item.stock} ${item.unidad}</td>
+        <td><span class="badge ${badgeClass}">${estado}</span></td>
+        <td class="stock-bar-wrap">
+          <div class="progress-wrap">
+            <div class="progress-bar" style="width:${pct}%;background:${color}"></div>
+          </div>
+          <div class="text-xs text-muted mt-xs">${pct}%</div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderizarPersonal() {
+  const grid = document.getElementById('personnel-grid');
+  grid.innerHTML = PERSONAL.map(p => `
+    <div class="person-card" id="person-${p.nombre.replace(/\s/g,'')}">
+      <div class="person-avatar">${p.emo}</div>
+      <div class="person-name">${p.nombre}</div>
+      <div class="person-role text-xs text-muted">${p.rol}</div>
+    </div>
+  `).join('');
+}
+
+function procesarPedidos() {
+  if (pedidosEnCurso || ESTADO.admin.procesado) return;
+  if (!ESTADO.ventas.lanzada) {
+    mostrarToast('⚠️ Primero se deben completar las ventas (Módulo 2)', 'amber');
+    return;
+  }
+  pedidosEnCurso = true;
+
+  const btn = document.getElementById('btn-pedidos');
+  const msg = document.getElementById('pedidos-msg');
+  btn.disabled = true;
+  msg.classList.remove('hidden');
+  msg.textContent = 'Iniciando procesamiento...';
+
+  // Calcular pedidos basados en ventas
+  const numPedidos   = ESTADO.ventas.numVentas;
+  const costoUnit    = 18.5;
+  const costoTotal   = Math.round(numPedidos * costoUnit);
+
+  ESTADO.admin.pedidosProcesados = numPedidos;
+  ESTADO.admin.costoLogistico    = costoTotal;
+
+  // Animar reducción de stock
+  const rebajas = [
+    { idx: 0, qty: Math.floor(numPedidos * 0.4) },
+    { idx: 1, qty: Math.floor(numPedidos * 0.2) },
+    { idx: 2, qty: Math.floor(numPedidos * 0.6) },
+    { idx: 3, qty: Math.floor(numPedidos * 0.3) },
+  ];
+
+  let paso = 0;
+  const totalPasos = 20;
+
+  const animInterval = setInterval(() => {
+    paso++;
+    const progreso = paso / totalPasos;
+
+    // Reducir stocks gradualmente
+    rebajas.forEach(r => {
+      const reduccion = Math.floor(r.qty * progreso);
+      ESTADO.inventario[r.idx].stock = ESTADO.inventario[r.idx].max - reduccion;
+    });
+    renderizarInventario();
+
+    // Actualizar contadores
+    document.getElementById('a-pedidos').textContent = Math.floor(numPedidos * progreso);
+    document.getElementById('a-costo').textContent   = Math.floor(costoTotal * progreso).toLocaleString();
+
+    // Activar personal (busy) progresivamente
+    if (paso === 5)  marcarPersonalOcupado(['AnaG.', 'CarlosM.']);
+    if (paso === 10) marcarPersonalOcupado(['DiegoS.', 'MaríaR.']);
+    if (paso === 15) marcarPersonalOcupado(['LauraPP.', 'PedroA.']);
+
+    if (paso >= totalPasos) {
+      clearInterval(animInterval);
+
+      // Mostrar alertas de logística
+      const alerts = document.getElementById('alerts-container');
+      const alertas = [
+        `📦 Despacho #1: ${Math.floor(numPedidos * 0.4)} paquetes en camino`,
+        `🚚 Transportista asignado — ETA: 24hs`,
+        `📋 Nota de entrega generada. Costo: $${costoTotal.toLocaleString()}`,
+      ];
+      alertas.forEach((txt, i) => {
+        setTimeout(() => {
+          const a = document.createElement('div');
+          a.className = 'alert-box';
+          a.innerHTML = `<span>⚠</span><span>${txt}</span>`;
+          alerts.appendChild(a);
+        }, i * 400);
+      });
+
+      document.getElementById('a-pedidos').textContent = numPedidos;
+      document.getElementById('a-costo').textContent   = costoTotal.toLocaleString();
+      ESTADO.admin.procesado = true;
+      msg.textContent = `✓ ${numPedidos} pedidos procesados. Logística activada.`;
+      msg.style.color = 'var(--amber)';
+      mostrarToast(`📦 ${numPedidos} pedidos procesados correctamente`, 'amber');
+      completarModulo(2);
+      pedidosEnCurso = false;
+    }
+  }, 80);
+}
+
+function marcarPersonalOcupado(nombres) {
+  nombres.forEach(n => {
+    const el = document.getElementById(`person-${n}`);
+    if (el) el.classList.add('busy');
+  });
+}
+
+
+/* ═══════════════════════════════════════════════
+   MÓDULO 4: CONTABILIDAD
+═══════════════════════════════════════════════ */
+const COSTOS_FIJOS = 1200 + 8500; // IT + nómina
+
+function inicializarContabilidad() {
+  actualizarEstadoResultados();
+  if (!chartFinanciero) crearGrafico();
+}
+
+function actualizarEstadoResultados() {
+  const ingresos       = ESTADO.ventas.ingresos;
+  const costoLog       = ESTADO.admin.costoLogistico;
+  const costosTotal    = costoLog + COSTOS_FIJOS;
+  const utilidad       = ingresos - costosTotal;
+  const margen         = ingresos > 0 ? Math.round((utilidad / ingresos) * 100) : 0;
+  const roi            = costoLog > 0 ? (utilidad / costoLog).toFixed(1) : '0.0';
+
+  // Desglose ingresos
+  const directas = Math.round(ingresos * 0.75);
+  const online   = ingresos - directas;
+
+  document.getElementById('c-ingresos').textContent    = `$${ingresos.toLocaleString()}`;
+  document.getElementById('c-v-directas').textContent  = `$${directas.toLocaleString()}`;
+  document.getElementById('c-v-online').textContent    = `$${online.toLocaleString()}`;
+  document.getElementById('c-costos').textContent      = `$${costosTotal.toLocaleString()}`;
+  document.getElementById('c-c-logistica').textContent = `$${costoLog.toLocaleString()}`;
+
+  const utilEl = document.getElementById('c-utilidad');
+  utilEl.textContent    = `$${utilidad.toLocaleString()}`;
+  utilEl.style.color    = utilidad >= 0 ? 'var(--green)' : '#ff5252';
+
+  document.getElementById('c-margen').textContent = margen;
+  document.getElementById('c-roi').textContent    = roi;
+}
+
+function crearGrafico() {
+  const ctx    = document.getElementById('financial-chart').getContext('2d');
+  const labels = ['Ingresos', 'Costos Totales', 'Utilidad Neta'];
+  const vals   = [0, 0, 0];
+
+  chartFinanciero = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'USD',
+        data: vals,
+        backgroundColor: [
+          'rgba(0,230,118,.7)',
+          'rgba(255,171,64,.7)',
+          'rgba(206,147,216,.7)',
+        ],
+        borderColor: [
+          'rgba(0,230,118,1)',
+          'rgba(255,171,64,1)',
+          'rgba(206,147,216,1)',
+        ],
+        borderWidth: 2,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` $${ctx.raw.toLocaleString()}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#1e2d42' },
+          ticks: { color: '#8fa8c8', font: { family: 'JetBrains Mono', size: 11 } }
+        },
+        y: {
+          grid: { color: '#1e2d42' },
+          ticks: {
+            color: '#8fa8c8',
+            font: { family: 'JetBrains Mono', size: 11 },
+            callback: v => `$${v.toLocaleString()}`
+          }
+        }
+      }
+    }
+  });
+}
+
+let cierreEnCurso = false;
+
+function generarCierre() {
+  if (cierreEnCurso || ESTADO.conta.cierreGenerado) return;
+  cierreEnCurso = true;
+
+  const btn = document.getElementById('btn-cierre');
+  const msg = document.getElementById('cierre-msg');
+  btn.disabled = true;
+  msg.classList.remove('hidden');
+  msg.textContent = 'Consolidando datos contables...';
+
+  const ingresos    = ESTADO.ventas.ingresos;
+  const costoLog    = ESTADO.admin.costoLogistico;
+  const costoTotal  = costoLog + COSTOS_FIJOS;
+  const utilidad    = Math.max(ingresos - costoTotal, 0);
+  const directas    = Math.round(ingresos * 0.75);
+  const online      = ingresos - directas;
+
+  // Animar contadores
+  let tick  = 0;
+  const total = 40;
+
+  const animInterval = setInterval(() => {
+    tick++;
+    const t = tick / total;
+
+    const ingAnim  = Math.floor(ingresos * t);
+    const cosAnim  = Math.floor(costoTotal * t);
+    const utilAnim = Math.floor(utilidad * t);
+    const dirAnim  = Math.floor(directas * t);
+    const onlAnim  = Math.floor(online * t);
+
+    document.getElementById('c-ingresos').textContent    = `$${ingAnim.toLocaleString()}`;
+    document.getElementById('c-v-directas').textContent  = `$${dirAnim.toLocaleString()}`;
+    document.getElementById('c-v-online').textContent    = `$${onlAnim.toLocaleString()}`;
+    document.getElementById('c-costos').textContent      = `$${cosAnim.toLocaleString()}`;
+    document.getElementById('c-c-logistica').textContent = `$${Math.floor(costoLog * t).toLocaleString()}`;
+
+    const utilEl = document.getElementById('c-utilidad');
+    utilEl.textContent = `$${utilAnim.toLocaleString()}`;
+    utilEl.style.color = 'var(--green)';
+
+    const margenAnim = ingresos > 0 ? Math.round((utilidad / ingresos) * 100 * t) : 0;
+    document.getElementById('c-margen').textContent = margenAnim;
+
+    // Animar gráfico
+    if (chartFinanciero) {
+      chartFinanciero.data.datasets[0].data = [ingAnim, cosAnim, utilAnim];
+      chartFinanciero.update('none');
+    }
+
+    if (tick >= total) {
+      clearInterval(animInterval);
+
+      // Valores finales exactos
+      actualizarEstadoResultados();
+      if (chartFinanciero) {
+        chartFinanciero.data.datasets[0].data = [ingresos, costoTotal, utilidad];
+        chartFinanciero.update();
+      }
+
+      const roi = costoLog > 0 ? (utilidad / costoLog).toFixed(1) : '0.0';
+      document.getElementById('c-roi').textContent = roi;
+
+      ESTADO.conta.cierreGenerado = true;
+      msg.textContent = `✓ Cierre financiero generado. Utilidad: $${utilidad.toLocaleString()}`;
+      msg.style.color = 'var(--purple)';
+      mostrarToast(`📊 Cierre financiero: Utilidad $${utilidad.toLocaleString()}`, 'purple');
+      completarModulo(3);
+      actualizarBtnSiguiente();
+      cierreEnCurso = false;
+    }
+  }, 60);
+}
+
+
+/* ═══════════════════════════════════════════════
+   INICIALIZACIÓN
+═══════════════════════════════════════════════ */
+
+// Conectar tabs de navegación
+document.querySelectorAll('#main-nav button').forEach((btn, i) => {
+  btn.addEventListener('click', () => navegarA(TABS[i]));
+});
+
+// Inicializar estado visual del footer
+actualizarBtnSiguiente();
+document.getElementById('global-status').textContent =
+  `Sistema detenido — Módulo 1: Desarrollo de Software`;
+
+</script>
+</body>
+</html>
