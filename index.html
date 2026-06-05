@@ -576,13 +576,13 @@
       <button class="active" data-tab="software" role="tab">
         <span class="step-num">1</span> Desarrollo de Software
       </button>
-      <button class="locked" data-tab="ventas" role="tab">
+      <button data-tab="ventas" role="tab">
         <span class="step-num">2</span> Ventas
       </button>
-      <button class="locked" data-tab="admin" role="tab">
+      <button data-tab="admin" role="tab">
         <span class="step-num">3</span> Administración
       </button>
-      <button class="locked" data-tab="conta" role="tab">
+      <button data-tab="conta" role="tab">
         <span class="step-num">4</span> Contabilidad
       </button>
     </nav>
@@ -668,10 +668,25 @@
         </ul>
       </div>
 
+      <div id="web-preview" class="card mt-md hidden">
+        <div class="card-label">🌎 Plataforma en línea</div>
+        <div class="card-value" style="font-size:1.2rem">https://app.comercial.com</div>
+        <div class="card-sub">La plataforma se despliega y la página web queda disponible para clientes.</div>
+        <div class="mt-sm flex items-center gap-sm" style="flex-wrap:wrap">
+          <a class="btn-action" id="btn-open-site" href="https://app.comercial.com" target="_blank" rel="noreferrer" style="text-decoration:none">
+            Abrir sitio web desplegado
+          </a>
+          <span class="text-muted text-sm">Vista previa disponible después del despliegue.</span>
+        </div>
+      </div>
+
       <!-- Botón acción -->
       <div class="mt-md flex items-center gap-md" style="flex-wrap:wrap">
         <button class="btn-action" id="btn-deploy" onclick="iniciarDespliegue()">
           <span>🚀</span> Desplegar Aplicación
+        </button>
+        <button class="btn-action hidden" id="btn-fix-error" onclick="resolverError()" style="--accent:var(--cyan)">
+          <span>🛠️</span> Reparar sistema
         </button>
         <span id="deploy-msg" class="text-muted text-sm hidden"></span>
       </div>
@@ -915,7 +930,10 @@
       <div class="status-dot" id="global-dot"></div>
       <span id="global-status">Sistema detenido — Módulo 1: Desarrollo de Software</span>
     </div>
-    <button class="btn-next" id="btn-siguiente" onclick="siguienteModulo()" disabled>
+    <button class="btn-action" id="btn-simular-error" onclick="simularError()" style="--accent:var(--amber)">
+      <span>⚠️</span> Simular error del sistema
+    </button>
+    <button class="btn-next" id="btn-siguiente" onclick="siguienteModulo()">
       Siguiente Módulo
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </button>
